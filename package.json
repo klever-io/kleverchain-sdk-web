@@ -1,7 +1,7 @@
 {
   "name": "@klever/sdk-web",
   "version": "1.0.0",
-  "description": "Kleverchain SDK integration with JS",
+  "description": "Kleverchain SDK integration with JS for browser",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "types": "dist/index.d.ts",
@@ -10,7 +10,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/klever-io/kleverchain-js.git"
+    "url": "git+https://github.com/klever-io/kleverchain-sdk-web.git"
   },
   "scripts": {
     "prepublishOnly": "yarn build",

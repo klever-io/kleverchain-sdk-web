@@ -1,4 +1,4 @@
-## [![npm version](https://badge.fury.io/js/@klever%2Fsdk.svg)](https://badge.fury.io/js/@klever%2Fsdk)
+## [![npm version](https://badge.fury.io/js/@klever%2Fsdk-web.svg)](https://badge.fury.io/js/@klever%2Fsdk-web)
 
 # Kleverchain SDK library
 
