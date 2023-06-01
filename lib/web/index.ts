@@ -48,20 +48,12 @@ const broadcastTransactions = async (
   return response;
 };
 
-const signMessage = async (
-  message: string,
-  privateKey: string
-): Promise<string> => {
+const signMessage = async (message: string): Promise<string> => {
   if (!isKleverWebActive()) {
     throw ErrLoadKleverWeb;
   }
 
-  const payload = JSON.stringify({
-    message,
-    privateKey,
-  });
-
-  const response = await globalThis?.kleverWeb?.signMessage(payload);
+  const response = await globalThis?.kleverWeb?.signMessage(message);
 
   return response;
 };
