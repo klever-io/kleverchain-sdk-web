@@ -9,6 +9,27 @@ async function waitForKleverWeb(timeout = 5000) {
   // kleverWeb is now available on the window object!
 }
 
+export const reverseHexBytes = (hex: string): string => {
+  let paddedHex = hex;
+  if (paddedHex.length % 2 !== 0) {
+    paddedHex = "0" + paddedHex;
+  }
+
+  let newHex = "";
+  for (let i = 0; i < paddedHex.length; i += 2) {
+    newHex = paddedHex.slice(i, i + 2) + newHex;
+  }
+
+  return newHex;
+};
+
+export const parseAccountPermissionBinaryOperations = (
+  binary: string
+): string => {
+  const hex = Number(`0b${binary}`).toString(16);
+  return reverseHexBytes(hex);
+};
+
 const utils = {
   waitForKleverWeb,
 };
