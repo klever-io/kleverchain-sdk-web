@@ -15,6 +15,7 @@ import {
   ISellOrder,
   ISetAccountName,
   ISetITOPrices,
+  ISmartContract,
   ITransfer,
   IUndelegate,
   IUnfreeze,
@@ -75,6 +76,7 @@ export {
   IUnjail,
   IDeposit,
   IITOTrigger,
+  ISmartContract,
 };
 
 export {
