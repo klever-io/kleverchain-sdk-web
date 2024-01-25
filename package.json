@@ -32,6 +32,6 @@
     "typescript": "^4.5.5"
   },
   "dependencies": {
-    "@klever/kleverweb": "^1.2.0"
+    "@klever/kleverweb": "^1.2.1"
   }
 }
