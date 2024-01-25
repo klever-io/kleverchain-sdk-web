@@ -94,10 +94,10 @@
     "@jridgewell/resolve-uri" "3.1.0"
     "@jridgewell/sourcemap-codec" "1.4.14"
 
-"@klever/kleverweb@^1.2.1":
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/@klever/kleverweb/-/kleverweb-1.2.1.tgz#17d772dc54a7759466b5c9d05e7cb529a76e73a0"
-  integrity sha512-JRTpd0uH6U3oB7q/lbipeXDJuL3AlC/pW9ezT0zAGZrchP32Lyg6NCn9uUvBL6DMVJYjhb7ywUYTKYqGnFsbjw==
+"@klever/kleverweb@^1.2.2":
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/@klever/kleverweb/-/kleverweb-1.2.2.tgz#ce00d43034ffce6deed21af6b7508189bcb166d9"
+  integrity sha512-uE90qJmi9jSSA6bvnjKtlFXv7juBTvvIc1Qzf8TgdSpj+U7KFtAR+ZD14oZAt4sO20kmJi1EgYc4reXRaum0GQ==
   dependencies:
     "@protobuf-ts/plugin" "^2.7.0"
 
