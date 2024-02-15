@@ -79,3 +79,51 @@ export function toByteArray(str: string) {
   }
   return byteArray;
 }
+
+export const encodeABIValue = (value: any, type: string) => {
+  switch (type) {
+    case "u64":
+    case "i64":
+      if (value < 0) {
+        return twosComplement(value, 64);
+      }
+      const parsedValue = value.toString(16).padStart(16, "0");
+      return parsedValue;
+    case "u32":
+    case "i32":
+    case "usize":
+    case "isize":
+      if (value < 0) {
+        return twosComplement(value, 32);
+      }
+      return value.toString(16).padStart(8, "0");
+    case "u16":
+    case "i16":
+      if (value < 0) {
+        return twosComplement(value, 16);
+      }
+      return value.toString(16).padStart(4, "0");
+    case "u8":
+    case "i8":
+      if (value < 0) {
+        return twosComplement(value, 8);
+      }
+      return value.toString(16).padStart(2, "0");
+    case "BigUint":
+    case "BigInt":
+      return encodeBigNumber(value);
+    case "bool":
+      return value ? "01" : "00";
+    case "ManagedBuffer":
+    case "BoxedBytes":
+    case "&[u8]":
+    case "Vec<u8>":
+    case "String":
+    case "&str":
+    case "bytes":
+    case "TokenIdentifier":
+      return encodeLengthPlusData(value);
+    default:
+      return value;
+  }
+};
