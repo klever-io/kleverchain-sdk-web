@@ -46,6 +46,7 @@ export const getCleanType = (abiType: string, toLower = true) => {
 
 const utils = {
   waitForKleverWeb,
+  getCleanType,
 };
 
 export default utils;

@@ -44,8 +44,10 @@ import { IAccountResponse } from "./types/dtos";
 
 import utils from "./utils";
 import web from "./web";
+import abiDecoder from "./utils/abi_decoder";
+import abiEncoder from "./utils/abi_encoder";
 
-export { utils, web };
+export { utils, web, abiDecoder, abiEncoder };
 
 export {
   IAccountResponse,

@@ -158,3 +158,9 @@ export function encodeAddress(value: string) {
 
   return pubkey.toString("hex");
 }
+
+const abiEncoder = {
+  encodeABIValue,
+};
+
+export default abiEncoder;
