@@ -30,6 +30,20 @@ export const parseAccountPermissionBinaryOperations = (
   return reverseHexBytes(hex);
 };
 
+export const getCleanType = (abiType: string, toLower = true) => {
+  const isOptional = abiType.toLowerCase().startsWith("option");
+  let cleanType = isOptional ? (abiType.match(/<(.*)>/) || [])[1] : abiType;
+
+  cleanType = cleanType;
+
+  cleanType = cleanType.split("<")[0];
+
+  if (toLower) {
+    cleanType = cleanType.toLowerCase();
+  }
+  return cleanType;
+};
+
 const utils = {
   waitForKleverWeb,
 };
