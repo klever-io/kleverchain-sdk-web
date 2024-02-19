@@ -1,3 +1,5 @@
+import { bech32 } from "bech32";
+
 interface IAbiItem {
   name: string;
   type: string;
@@ -19,7 +21,9 @@ const decodeAddress = (hexValue: string): DecodeResult => {
     };
   }
 
-  const data = hexValue.slice(0, 64);
+  const words = bech32.toWords(Buffer.from(hexValue.slice(0, 64), "hex"));
+
+  const data = bech32.encode("klv", words);
   const newHex = hexValue.slice(64);
 
   return { data, newHex };

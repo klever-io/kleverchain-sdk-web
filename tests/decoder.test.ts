@@ -56,7 +56,7 @@ describe("decode simple structure", () => {
     expect(result.u64_val).toBe(BigInt(20));
     expect(result.biguint_val).toBe(BigInt(30));
     expect(result.address_val).toBe(
-      "485d212a35410fdef731419f9380a9a2984d885388a807c297d3c2cb2c467cde"
+      "klv1fpwjz234gy8aaae3gx0e8q9f52vymzzn3z5q0s5h60pvktzx0n0qwvtux5"
     );
     expect(result.token_val).toBe("KLV");
   });
@@ -114,7 +114,7 @@ describe("decode simple structure with default and zeros", () => {
     expect(result.u64_val).toBe(BigInt(0));
     expect(result.biguint_val).toBe(BigInt(0));
     expect(result.address_val).toBe(
-      "485d212a35410fdef731419f9380a9a2984d885388a807c297d3c2cb2c467cde"
+      "klv1fpwjz234gy8aaae3gx0e8q9f52vymzzn3z5q0s5h60pvktzx0n0qwvtux5"
     );
     expect(result.token_val).toBe("KLV");
   });
@@ -209,7 +209,7 @@ describe("decode value with managed vec (List<>)", () => {
     expect(result.u64_val).toBe(BigInt(200));
     expect(result.biguint_val).toBe(BigInt(300));
     expect(result.address_val).toBe(
-      "485d212a35410fdef731419f9380a9a2984d885388a807c297d3c2cb2c467cde"
+      "klv1fpwjz234gy8aaae3gx0e8q9f52vymzzn3z5q0s5h60pvktzx0n0qwvtux5"
     );
     expect(result.token_val).toBe("KLV");
     expect(result.values.length).toBe(2);
@@ -218,7 +218,9 @@ describe("decode value with managed vec (List<>)", () => {
     expect(result.values[0].u32_val).toBe(0);
     expect(result.values[0].u64_val).toBe(BigInt(0));
     expect(result.values[0].biguint_val).toBe(BigInt(0));
-    expect(result.values[0].address_val).toBe("0".repeat(64));
+    expect(result.values[0].address_val).toBe(
+      "klv1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpgm89z"
+    ); // zero-address
     expect(result.values[0].token_val).toBe("KLV");
 
     expect(result.values[1].title).toBe("Value Teste");
@@ -227,7 +229,7 @@ describe("decode value with managed vec (List<>)", () => {
     expect(result.values[1].u64_val).toBe(BigInt(20));
     expect(result.values[1].biguint_val).toBe(BigInt(30));
     expect(result.values[1].address_val).toBe(
-      "485d212a35410fdef731419f9380a9a2984d885388a807c297d3c2cb2c467cde"
+      "klv1fpwjz234gy8aaae3gx0e8q9f52vymzzn3z5q0s5h60pvktzx0n0qwvtux5"
     );
     expect(result.values[1].token_val).toBe("KLV");
   });
@@ -322,7 +324,7 @@ describe("decode value with managed vec empty (List<>)", () => {
     expect(result.u64_val).toBe(BigInt(200));
     expect(result.biguint_val).toBe(BigInt(300));
     expect(result.address_val).toBe(
-      "485d212a35410fdef731419f9380a9a2984d885388a807c297d3c2cb2c467cde"
+      "klv1fpwjz234gy8aaae3gx0e8q9f52vymzzn3z5q0s5h60pvktzx0n0qwvtux5"
     );
     expect(result.token_val).toBe("KLV");
     expect(result.values.length).toBe(0);
@@ -418,7 +420,7 @@ describe("decode value with managed vec of managed vec (List<List<>>)", () => {
     expect(result.u64_val).toBe(BigInt(200));
     expect(result.biguint_val).toBe(BigInt(300));
     expect(result.address_val).toBe(
-      "485d212a35410fdef731419f9380a9a2984d885388a807c297d3c2cb2c467cde"
+      "klv1fpwjz234gy8aaae3gx0e8q9f52vymzzn3z5q0s5h60pvktzx0n0qwvtux5"
     );
     expect(result.token_val).toBe("KLV");
     expect(result.values.length).toBe(1);
@@ -428,7 +430,9 @@ describe("decode value with managed vec of managed vec (List<List<>>)", () => {
     expect(result.values[0][0].u32_val).toBe(0);
     expect(result.values[0][0].u64_val).toBe(BigInt(0));
     expect(result.values[0][0].biguint_val).toBe(BigInt(0));
-    expect(result.values[0][0].address_val).toBe("0".repeat(64));
+    expect(result.values[0][0].address_val).toBe(
+      "klv1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpgm89z" // zero-address
+    );
     expect(result.values[0][0].token_val).toBe("KLV");
 
     expect(result.values[0][1].title).toBe("Value Teste");
@@ -437,7 +441,7 @@ describe("decode value with managed vec of managed vec (List<List<>>)", () => {
     expect(result.values[0][1].u64_val).toBe(BigInt(20));
     expect(result.values[0][1].biguint_val).toBe(BigInt(30));
     expect(result.values[0][1].address_val).toBe(
-      "485d212a35410fdef731419f9380a9a2984d885388a807c297d3c2cb2c467cde"
+      "klv1fpwjz234gy8aaae3gx0e8q9f52vymzzn3z5q0s5h60pvktzx0n0qwvtux5"
     );
     expect(result.values[0][1].token_val).toBe("KLV");
   });
