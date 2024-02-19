@@ -84,7 +84,8 @@ export function toByteArray(str: string) {
 }
 
 export const encodeABIValue = (value: any, type: string) => {
-  const outerType = getCleanType(type).split("<")[0];
+  const outerType = getCleanType(type, false).split("<")[0];
+  console.log(outerType, value);
 
   switch (outerType) {
     case "u64":
