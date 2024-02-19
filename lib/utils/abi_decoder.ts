@@ -417,3 +417,11 @@ export const decodeStruct = (
 
   return result;
 };
+
+const abiDecoder = {
+  decodeValue,
+  decodeList,
+  decodeStruct,
+};
+
+export default abiDecoder;
