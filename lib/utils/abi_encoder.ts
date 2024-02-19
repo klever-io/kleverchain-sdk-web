@@ -156,7 +156,5 @@ export function encodeAddress(value: string) {
     throw new Error("Invalid pubkey length");
   }
 
-  console.log(pubkey.toString("hex"));
-
   return pubkey.toString("hex");
 }
