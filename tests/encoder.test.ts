@@ -2,6 +2,7 @@ import {
   encodeBigNumber,
   twosComplement,
   encodeABIValue,
+  encodeAddress,
 } from "../lib/utils/abi_encoder";
 
 describe("utils", () => {
@@ -55,5 +56,14 @@ describe("encoder", () => {
     const value = 255;
     const type = "u64";
     expect(encodeABIValue(value, type)).toBe("00000000000000ff");
+  });
+
+  it("should encode address correctly", () => {
+    const address =
+      "klv1fpwjz234gy8aaae3gx0e8q9f52vymzzn3z5q0s5h60pvktzx0n0qwvtux5";
+    const encoded = encodeAddress(address);
+    expect(encoded).toBe(
+      "485d212a35410fdef731419f9380a9a2984d885388a807c297d3c2cb2c467cde"
+    );
   });
 });

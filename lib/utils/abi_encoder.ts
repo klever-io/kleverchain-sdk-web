@@ -1,3 +1,6 @@
+import { bech32 } from "bech32";
+import { getCleanType } from ".";
+
 export const twosComplement = (value: number, bitsSize: number): string => {
   if (value < 0) {
     value *= -1;
@@ -81,7 +84,9 @@ export function toByteArray(str: string) {
 }
 
 export const encodeABIValue = (value: any, type: string) => {
-  switch (type) {
+  const outerType = getCleanType(type).split("<")[0];
+
+  switch (outerType) {
     case "u64":
     case "i64":
       if (value < 0) {
@@ -117,13 +122,41 @@ export const encodeABIValue = (value: any, type: string) => {
     case "ManagedBuffer":
     case "BoxedBytes":
     case "&[u8]":
-    case "Vec<u8>":
+    case "Vec":
     case "String":
     case "&str":
     case "bytes":
     case "TokenIdentifier":
+    case "List":
+    case "Array":
       return encodeLengthPlusData(value);
+    case "Address":
+      return encodeAddress(value);
     default:
       return value;
   }
 };
+
+export function encodeAddress(value: string) {
+  let decoded;
+
+  try {
+    decoded = bech32.decode(value);
+  } catch (err: any) {
+    throw new Error(err);
+  }
+
+  const prefix = decoded.prefix;
+  if (prefix != "klv") {
+    throw new Error("Invalid prefix");
+  }
+
+  const pubkey = Buffer.from(bech32.fromWords(decoded.words));
+  if (pubkey.length != 32) {
+    throw new Error("Invalid pubkey length");
+  }
+
+  console.log(pubkey.toString("hex"));
+
+  return pubkey.toString("hex");
+}
