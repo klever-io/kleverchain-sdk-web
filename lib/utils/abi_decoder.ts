@@ -191,7 +191,7 @@ const decodeSingleValue = (
   direct: boolean,
   type: string
 ): DecodeResult => {
-  if (type.includes("Option<")) {
+  if (type.startsWith("Option<")) {
     const some = hexValue.slice(0, 2) === "01";
     hexValue = hexValue.slice(2);
 
@@ -259,7 +259,7 @@ const decodeListValue = (
   hexValue: string,
   type: string
 ): DecodeResult => {
-  if (type.includes("Option<")) {
+  if (type.startsWith("Option<")) {
     const some = hexValue.slice(0, 2) === "01";
     hexValue = hexValue.slice(2);
 
@@ -277,7 +277,7 @@ const decodeListValue = (
   let newHex = hexValue.slice(8);
 
   for (let i = 0; i < len; i++) {
-    if (type.includes("List<")) {
+    if (type.startsWith("List<")) {
       const decoded = decodeListValue(abiJson, newHex, type);
       if (decoded.error) {
         return {
@@ -334,7 +334,7 @@ export const decodeList = (
   type: string,
   abi: string
 ): any => {
-  if (type.includes("Option<")) {
+  if (type.startsWith("Option<")) {
     const some = hexValue.slice(0, 2) === "01";
     hexValue = hexValue.slice(2);
 
@@ -366,7 +366,7 @@ export const decodeStruct = (
   type: string,
   abi: string
 ): any => {
-  if (type.includes("Option<")) {
+  if (type.startsWith("Option<")) {
     const some = hexValue.slice(0, 2) === "01";
     hexValue = hexValue.slice(2);
 
@@ -395,7 +395,7 @@ export const decodeStruct = (
   const result: any = {};
 
   typeDef.fields.map((item: IAbiItem) => {
-    if (item.type.includes("List<")) {
+    if (item.type.startsWith("List<")) {
       const decoded = decodeListValue(abiJson, hexValue, item.type);
       if (decoded.error) {
         throw new Error(decoded.error);
