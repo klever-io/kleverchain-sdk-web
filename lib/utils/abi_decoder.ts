@@ -191,6 +191,19 @@ const decodeSingleValue = (
   direct: boolean,
   type: string
 ): DecodeResult => {
+  if (type.includes("Option<")) {
+    const some = hexValue.slice(0, 2) === "01";
+    hexValue = hexValue.slice(2);
+
+    if (!some) {
+      return { data: null, newHex: hexValue };
+    }
+
+    type = type.slice(7, -1);
+
+    direct = false;
+  }
+
   switch (type) {
     case "u64":
       return decodeUint(hexValue, 16);
@@ -246,6 +259,17 @@ const decodeListValue = (
   hexValue: string,
   type: string
 ): DecodeResult => {
+  if (type.includes("Option<")) {
+    const some = hexValue.slice(0, 2) === "01";
+    hexValue = hexValue.slice(2);
+
+    if (!some) {
+      return { data: null, newHex: hexValue };
+    }
+
+    type = type.slice(7, -1);
+  }
+
   const len = parseInt(hexValue.slice(0, 8), 16);
   const list = [];
   type = type.slice(5, -1);
@@ -310,6 +334,17 @@ export const decodeList = (
   type: string,
   abi: string
 ): any => {
+  if (type.includes("Option<")) {
+    const some = hexValue.slice(0, 2) === "01";
+    hexValue = hexValue.slice(2);
+
+    if (!some) {
+      return { data: null, newHex: hexValue };
+    }
+
+    type = type.slice(7, -1);
+  }
+
   if (abi === "") {
     abi = `{"types":{}}`;
   }
@@ -331,6 +366,17 @@ export const decodeStruct = (
   type: string,
   abi: string
 ): any => {
+  if (type.includes("Option<")) {
+    const some = hexValue.slice(0, 2) === "01";
+    hexValue = hexValue.slice(2);
+
+    if (!some) {
+      return { data: null, newHex: hexValue };
+    }
+
+    type = type.slice(7, -1);
+  }
+
   const abiJson = JSON.parse(abi);
   if (!abiJson.types) {
     throw new Error("Invalid ABI");

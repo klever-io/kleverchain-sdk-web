@@ -528,6 +528,19 @@ describe("decode single values tests", () => {
       type: "BigInt",
       expected: BigInt("-9223372036854775808"),
     },
+    {
+      purpose:
+        "Should decode 01000000055465737465 to Teste as Option<ManagedBuffer>",
+      hexValue: "01000000055465737465",
+      type: "Option<ManagedBuffer>",
+      expected: "Teste",
+    },
+    {
+      purpose: "Should decode '' to null as Option<ManagedBuffer>",
+      hexValue: "",
+      type: "Option<ManagedBuffer>",
+      expected: null,
+    },
   ];
 
   values.map((value) => {
@@ -668,4 +681,41 @@ describe("decode list of numbers", () => {
   expect(decoded2[0][1]).toBe("K");
   expect(decoded2[1].length).toBe(1);
   expect(decoded2[1][0]).toBe("KLV");
+});
+
+describe("decode struct with Optionals", () => {
+  let abi = JSON.stringify({
+    types: {
+      Testing: {
+        type: "struct",
+        fields: [
+          {
+            name: "opt_1",
+            type: "Option<bytes>",
+          },
+          {
+            name: "opt_2",
+            type: "Option<bytes>",
+          },
+          {
+            name: "m_opt_1",
+            type: "Option<bytes>",
+          },
+          {
+            name: "m_opt_2",
+            type: "Option<bytes>",
+          },
+        ],
+      },
+    },
+  });
+
+  let hex = "0001000000055465737465000100000006546573746532";
+  let type = "Testing";
+  let result = decodeStruct(hex, type, abi);
+
+  expect(result.opt_1).toBe(null);
+  expect(result.opt_2).toBe("Teste");
+  expect(result.m_opt_1).toBe(null);
+  expect(result.m_opt_2).toBe("Teste2");
 });
