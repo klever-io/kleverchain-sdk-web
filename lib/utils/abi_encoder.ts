@@ -1,12 +1,24 @@
 import { bech32 } from "bech32";
-import { getCleanType } from ".";
-
-export const twosComplement = (value: number, bitsSize: number): string => {
+import { getCleanType, getJSType } from ".";
+export function twosComplement(
+  value: number,
+  bitsSize: number,
+  isNested = true
+): string {
   if (value < 0) {
     value *= -1;
   }
 
-  const bits = value.toString(2).padStart(bitsSize, "0");
+  if (!isNested) {
+    bitsSize = Math.ceil(Math.log2(value + 1));
+    console.log("bitsSize", bitsSize);
+  }
+
+  let bits = value.toString(2);
+
+  if (isNested) {
+    bits = bits.padStart(bitsSize, "0");
+  }
 
   let complement = "";
 
@@ -32,9 +44,9 @@ export const twosComplement = (value: number, bitsSize: number): string => {
   ).toString(16);
 
   return hexComplement;
-};
+}
 
-export function encodeBigNumber(value: number) {
+export function encodeBigNumber(value: number, isNested = true) {
   let hex = value.toString(16);
   if (value < 0) {
     hex = twosComplement(value, hex.length * 4);
@@ -53,12 +65,16 @@ export function encodeBigNumber(value: number) {
     }
   }
 
+  if (!isNested) {
+    return hex;
+  }
+
   const length = (hex.length / 2).toString(16).padStart(8, "0");
 
   return length + hex;
 }
 
-export function encodeLengthPlusData(value: string | any[]) {
+export function encodeLengthPlusData(value: string | any[], isNested = true) {
   let data;
   if (typeof value === "string") {
     data = toByteArray(value);
@@ -66,11 +82,20 @@ export function encodeLengthPlusData(value: string | any[]) {
     data = value;
   }
 
-  const length = data.length.toString(16).padStart(8, "0");
+  if (data.length === 0) {
+    return "";
+  }
 
   const dataHex = Array.from(data)
     .map((byte) => byte.toString(16).padStart(2, "0"))
     .join("");
+
+  if (!isNested) {
+    return dataHex;
+  }
+
+  const length = data.length.toString(16).padStart(8, "0");
+
   return length + dataHex;
 }
 
@@ -83,42 +108,64 @@ export function toByteArray(str: string) {
   return byteArray;
 }
 
-export const encodeABIValue = (value: any, type: string) => {
+const padValue = (value: string, length: number, isNested = true) => {
+  if (isNested) {
+    return value.padStart(length, "0");
+  } else if (value.length % 2 !== 0) {
+    return "0" + value;
+  }
+  return value;
+};
+
+export const encodeABIValue = (value: any, type: string, isNested = true) => {
   const outerType = getCleanType(type, false).split("<")[0];
+
+  let typeParsedValue = value;
+  const jsType = getJSType(type);
+  if (jsType === "number") {
+    typeParsedValue = Number(typeParsedValue);
+
+    if (isNaN(typeParsedValue)) {
+      return "";
+    }
+  }
 
   switch (outerType) {
     case "u64":
     case "i64":
-      if (value < 0) {
-        return twosComplement(value, 64);
+      if (typeParsedValue < 0) {
+        return twosComplement(typeParsedValue, 64, isNested);
       }
-      const parsedValue = value.toString(16).padStart(16, "0");
-      return parsedValue;
+      let parsedValue = typeParsedValue.toString(16);
+      return padValue(parsedValue, 16, isNested);
     case "u32":
     case "i32":
     case "usize":
     case "isize":
-      if (value < 0) {
-        return twosComplement(value, 32);
+      if (typeParsedValue < 0) {
+        return twosComplement(typeParsedValue, 32, isNested);
       }
-      return value.toString(16).padStart(8, "0");
+      parsedValue = typeParsedValue.toString(16);
+      return padValue(parsedValue, 8, isNested);
     case "u16":
     case "i16":
-      if (value < 0) {
-        return twosComplement(value, 16);
+      if (typeParsedValue < 0) {
+        return twosComplement(typeParsedValue, 16, isNested);
       }
-      return value.toString(16).padStart(4, "0");
+      parsedValue = typeParsedValue.toString(16);
+      return padValue(parsedValue, 4, isNested);
     case "u8":
     case "i8":
-      if (value < 0) {
-        return twosComplement(value, 8);
+      if (typeParsedValue < 0) {
+        return twosComplement(typeParsedValue, 8, isNested);
       }
-      return value.toString(16).padStart(2, "0");
+      parsedValue = typeParsedValue.toString(16);
+      return padValue(parsedValue, 2, isNested);
     case "BigUint":
     case "BigInt":
-      return encodeBigNumber(value);
+      return encodeBigNumber(typeParsedValue, isNested);
     case "bool":
-      return value ? "01" : "00";
+      return typeParsedValue ? "01" : "00";
     case "ManagedBuffer":
     case "BoxedBytes":
     case "&[u8]":
@@ -129,11 +176,11 @@ export const encodeABIValue = (value: any, type: string) => {
     case "TokenIdentifier":
     case "List":
     case "Array":
-      return encodeLengthPlusData(value);
+      return encodeLengthPlusData(typeParsedValue, isNested);
     case "Address":
-      return encodeAddress(value);
+      return encodeAddress(typeParsedValue);
     default:
-      return value;
+      return typeParsedValue;
   }
 };
 
@@ -143,17 +190,17 @@ export function encodeAddress(value: string) {
   try {
     decoded = bech32.decode(value);
   } catch (err: any) {
-    throw new Error(err);
+    return value;
   }
 
   const prefix = decoded.prefix;
   if (prefix != "klv") {
-    throw new Error("Invalid prefix");
+    return value;
   }
 
   const pubkey = Buffer.from(bech32.fromWords(decoded.words));
   if (pubkey.length != 32) {
-    throw new Error("Invalid pubkey length");
+    return value;
   }
 
   return pubkey.toString("hex");
@@ -161,6 +208,11 @@ export function encodeAddress(value: string) {
 
 const abiEncoder = {
   encodeABIValue,
+  encodeLengthPlusData,
+  toByteArray,
+  encodeBigNumber,
+  twosComplement,
+  encodeAddress,
 };
 
 export default abiEncoder;

@@ -1,3 +1,5 @@
+import { ABITypeMap } from "../types/abi";
+
 async function waitForKleverWeb(timeout = 5000) {
   const startTime = Date.now();
   while (!window.kleverWeb) {
@@ -44,9 +46,22 @@ export const getCleanType = (abiType: string, toLower = true) => {
   return cleanType;
 };
 
+export const getJSType = (abiType: string): string => {
+  const cleanType = getCleanType(abiType);
+
+  for (const [key, values] of Object.entries(ABITypeMap)) {
+    if (values.includes(cleanType)) {
+      return key;
+    }
+  }
+
+  return "object";
+};
+
 const utils = {
   waitForKleverWeb,
   getCleanType,
+  getJSType,
 };
 
 export default utils;
