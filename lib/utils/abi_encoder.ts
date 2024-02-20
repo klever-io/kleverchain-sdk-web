@@ -1,5 +1,6 @@
 import { bech32 } from "bech32";
 import { getCleanType, getJSType } from ".";
+
 export function twosComplement(
   value: number,
   bitsSize: number,
@@ -130,14 +131,16 @@ export const encodeABIValue = (value: any, type: string, isNested = true) => {
     }
   }
 
+  let hexNumber;
+
   switch (outerType) {
     case "u64":
     case "i64":
       if (typeParsedValue < 0) {
         return twosComplement(typeParsedValue, 64, isNested);
       }
-      let parsedValue = typeParsedValue.toString(16);
-      return padValue(parsedValue, 16, isNested);
+      hexNumber = typeParsedValue.toString(16);
+      return padValue(hexNumber, 16, isNested);
     case "u32":
     case "i32":
     case "usize":
@@ -145,22 +148,22 @@ export const encodeABIValue = (value: any, type: string, isNested = true) => {
       if (typeParsedValue < 0) {
         return twosComplement(typeParsedValue, 32, isNested);
       }
-      parsedValue = typeParsedValue.toString(16);
-      return padValue(parsedValue, 8, isNested);
+      hexNumber = typeParsedValue.toString(16);
+      return padValue(hexNumber, 8, isNested);
     case "u16":
     case "i16":
       if (typeParsedValue < 0) {
         return twosComplement(typeParsedValue, 16, isNested);
       }
-      parsedValue = typeParsedValue.toString(16);
-      return padValue(parsedValue, 4, isNested);
+      hexNumber = typeParsedValue.toString(16);
+      return padValue(hexNumber, 4, isNested);
     case "u8":
     case "i8":
       if (typeParsedValue < 0) {
         return twosComplement(typeParsedValue, 8, isNested);
       }
-      parsedValue = typeParsedValue.toString(16);
-      return padValue(parsedValue, 2, isNested);
+      hexNumber = typeParsedValue.toString(16);
+      return padValue(hexNumber, 2, isNested);
     case "BigUint":
     case "BigInt":
       return encodeBigNumber(typeParsedValue, isNested);
