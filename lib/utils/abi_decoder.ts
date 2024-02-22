@@ -254,6 +254,57 @@ const decodeSingleValue = (
   }
 };
 
+const decodeListHandle = (
+  abiJson: any,
+  newHex: string,
+  type: string
+): DecodeResult => {
+  if (type.startsWith("List<")) {
+    const decoded = decodeListValue(abiJson, newHex, type);
+    if (decoded.error) {
+      return {
+        error: decoded.error,
+        newHex: newHex,
+      };
+    }
+
+    newHex = decoded.newHex;
+
+    return { dataArr: decoded.dataArr, newHex };
+  }
+
+  const typeDef = abiJson.types[type];
+
+  let decodedValue;
+
+  if (!typeDef || typeDef.type !== "struct") {
+    decodedValue = decodeSingleValue(newHex, false, typeDef?.type || type);
+    if (decodedValue.error) {
+      return {
+        error: decodedValue.error,
+        newHex: newHex,
+      };
+    }
+
+    newHex = decodedValue.newHex;
+    return { data: decodedValue.data, newHex };
+  }
+
+  const result: any = {};
+
+  typeDef.fields.map((item: IAbiItem) => {
+    decodedValue = decodeSingleValue(newHex, false, item.type);
+    if (decodedValue.error) {
+      throw new Error(decodedValue.error);
+    }
+
+    result[item.name] = decodedValue.data;
+    newHex = decodedValue.newHex;
+  });
+
+  return { data: result, newHex };
+};
+
 const decodeListValue = (
   abiJson: any,
   hexValue: string,
@@ -277,53 +328,15 @@ const decodeListValue = (
   let newHex = hexValue.slice(8);
 
   for (let i = 0; i < len; i++) {
-    if (type.startsWith("List<")) {
-      const decoded = decodeListValue(abiJson, newHex, type);
-      if (decoded.error) {
-        return {
-          error: decoded.error,
-          newHex: newHex,
-        };
-      }
+    let decoded = decodeListHandle(abiJson, newHex, type);
 
+    if (decoded.dataArr) {
       list.push(decoded.dataArr);
-
-      newHex = decoded.newHex;
-
-      continue;
+    } else {
+      list.push(decoded.data);
     }
 
-    const typeDef = abiJson.types[type];
-
-    let decodedValue;
-
-    if (!typeDef || typeDef.type !== "struct") {
-      decodedValue = decodeSingleValue(newHex, false, typeDef?.type || type);
-      if (decodedValue.error) {
-        return {
-          error: decodedValue.error,
-          newHex: newHex,
-        };
-      }
-
-      list.push(decodedValue.data);
-      newHex = decodedValue.newHex;
-      continue;
-    }
-
-    const result: any = {};
-
-    typeDef.fields.map((item: IAbiItem) => {
-      decodedValue = decodeSingleValue(newHex, false, item.type);
-      if (decodedValue.error) {
-        throw new Error(decodedValue.error);
-      }
-
-      result[item.name] = decodedValue.data;
-      newHex = decodedValue.newHex;
-    });
-
-    list.push(result);
+    newHex = decoded.newHex;
   }
 
   return { dataArr: list, newHex };
@@ -354,7 +367,22 @@ export const decodeList = (
     throw new Error("Invalid ABI");
   }
 
-  return decodeListValue(abiJson, hexValue, type).dataArr;
+  // remove main list type
+  type = type.slice(5, -1);
+
+  let res = [];
+
+  do {
+    const decoded = decodeListHandle(abiJson, hexValue, type);
+    if (decoded.dataArr) {
+      res.push(decoded.dataArr);
+    } else {
+      res.push(decoded.data);
+    }
+    hexValue = decoded.newHex;
+  } while (hexValue.length > 0);
+
+  return res;
 };
 
 export const decodeValue = (hexValue: string, type: string): any => {

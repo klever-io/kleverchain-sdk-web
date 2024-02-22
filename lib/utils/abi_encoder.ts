@@ -12,7 +12,6 @@ export function twosComplement(
 
   if (!isNested) {
     bitsSize = Math.ceil(Math.log2(value + 1));
-    console.log("bitsSize", bitsSize);
   }
 
   let bits = value.toString(2);
