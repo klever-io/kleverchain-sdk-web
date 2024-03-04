@@ -1,5 +1,6 @@
 import { bech32 } from "bech32";
 import { getCleanType, getJSType } from ".";
+import { Buffer } from "buffer";
 
 export function twosComplement(
   value: number,
