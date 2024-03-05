@@ -186,6 +186,118 @@ const hexToString = (hex: string): string => {
   return str;
 };
 
+export const decode = (
+  abi: string,
+  hexValue: string,
+  endpoint: string
+): any => {
+  if (endpoint === "") {
+    throw new Error("Invalid endpoint provided");
+  }
+
+  if (!abi || abi === undefined || abi === "" || abi === "{}") {
+    throw new Error("Invalid ABI");
+  }
+
+  const abiJson = JSON.parse(abi);
+  if (!abiJson.endpoints) {
+    throw new Error("Invalid ABI");
+  }
+
+  const endpointDef = abiJson.endpoints.find((t: any) => t.name === endpoint);
+  if (!endpointDef) {
+    throw new Error("Invalid endpoint");
+  }
+
+  if (endpointDef.mutability !== "readonly") {
+    throw new Error("Invalid mutability");
+  }
+
+  if (!endpointDef.outputs || endpointDef.outputs.length === 0) {
+    throw new Error("Invalid output length");
+  }
+
+  if (endpointDef.outputs.length !== 1) {
+    throw new Error("Invalid output length");
+  }
+
+  let type = endpointDef.outputs[0].type;
+
+  return selectDecode(abi, abiJson, hexValue, type);
+};
+
+const selectDecode = (
+  abi: string,
+  abiJSON: any,
+  hexValue: string,
+  type: string
+): any => {
+  if (type.startsWith("tuple<")) {
+    type = type.slice(6, -1);
+    return decodeTuple(abiJSON, hexValue, type);
+  }
+
+  if (type.startsWith("variadic<")) {
+    type = type.slice(9, -1);
+    return decodeList(hexValue, type, abi, true);
+  }
+
+  if (type.startsWith("List<")) {
+    type = type.slice(5, -1);
+    return decodeList(hexValue, type, abi, false);
+  }
+
+  if (!abiJSON.types) {
+    return decodeValue(hexValue, type);
+  }
+
+  const abiType = abiJSON.types[type];
+  if (!abiType) {
+    return decodeValue(hexValue, type);
+  }
+
+  if (abiType.type === "struct") {
+    return decodeStruct(hexValue, type, abi);
+  }
+
+  throw new Error(`Invalid type: ${type}`);
+};
+
+export const decodeTuple = (
+  abiJSON: any,
+  hexValue: string,
+  type: string
+): DecodeResult => {
+  const types = type.split(",");
+
+  if (!abiJSON.types) {
+    abiJSON["types"] = {};
+  }
+
+  abiJSON.types["generated_custom_type"] = generateTupleType(types);
+
+  const result: any = {};
+
+  return decodeStruct(
+    hexValue,
+    "generated_custom_type",
+    JSON.stringify(abiJSON)
+  );
+};
+
+const generateTupleType = (types: string[]): any => {
+  let tuppleType: { [key: string]: any } = {
+    type: "struct",
+    fields: [],
+  };
+
+  types.map((type, index) => {
+    tuppleType.fields.push({ name: `_${index}`, type });
+  });
+
+  return tuppleType;
+};
+
 const decodeSingleValue = (
   hexValue: string,
   direct: boolean,
@@ -345,8 +457,13 @@ const decodeListValue = (
 export const decodeList = (
   hexValue: string,
   type: string,
-  abi: string
+  abi: string,
+  variadic?: boolean
 ): any => {
+  if (variadic) {
+    hexValue = hexValue.slice(8);
+  }
+
   if (type.startsWith("Option<")) {
     const some = hexValue.slice(0, 2) === "01";
     hexValue = hexValue.slice(2);
@@ -366,9 +483,6 @@ export const decodeList = (
   if (!abiJson.types) {
     throw new Error("Invalid ABI");
   }
-
-  // remove main list type
-  type = type.slice(5, -1);
 
   let res = [];
 
