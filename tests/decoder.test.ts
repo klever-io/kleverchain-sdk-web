@@ -2,9 +2,10 @@ import {
   decodeStruct,
   decodeList,
   decodeValue,
+  decode,
 } from "../lib/utils/abi_decoder";
 
-describe("decode simple structure", () => {
+describe("decodeStruct: should decode simple structure", () => {
   const mockAbi = JSON.stringify({
     types: {
       Teste: {
@@ -62,7 +63,7 @@ describe("decode simple structure", () => {
   });
 });
 
-describe("decode simple structure with default and zeros", () => {
+describe("decodeStruct: should decode simple structure with default and zeros", () => {
   const mockAbi = JSON.stringify({
     types: {
       Teste: {
@@ -120,7 +121,7 @@ describe("decode simple structure with default and zeros", () => {
   });
 });
 
-describe("decode value with managed vec (List<>)", () => {
+describe("decodeStruct: should decode value with managed vec (List<>)", () => {
   const mockAbi = JSON.stringify({
     types: {
       Teste: {
@@ -235,7 +236,7 @@ describe("decode value with managed vec (List<>)", () => {
   });
 });
 
-describe("decode value with managed vec empty (List<>)", () => {
+describe("decodeStruct: should decode value with managed vec empty (List<>)", () => {
   const mockAbi = JSON.stringify({
     types: {
       Teste: {
@@ -331,7 +332,7 @@ describe("decode value with managed vec empty (List<>)", () => {
   });
 });
 
-describe("decode value with managed vec of managed vec (List<List<>>)", () => {
+describe("decodeStruct: should decode value with managed vec of managed vec (List<List<>>)", () => {
   const mockAbi = JSON.stringify({
     types: {
       Teste: {
@@ -447,7 +448,7 @@ describe("decode value with managed vec of managed vec (List<List<>>)", () => {
   });
 });
 
-describe("decode single values tests", () => {
+describe("decodeValue: should decode all values", () => {
   let values = [
     {
       purpose: "Should decode 0a to 10 as u64",
@@ -551,7 +552,7 @@ describe("decode single values tests", () => {
   });
 });
 
-describe("decode struct of numbers", () => {
+describe("decodeStruct: should decode struct of numbers", () => {
   const mockAbi = JSON.stringify({
     types: {
       Teste3: {
@@ -662,8 +663,8 @@ describe("decode struct of numbers", () => {
   });
 });
 
-describe("decode list of numbers", () => {
-  let decoded = decodeList("000000020304", "List<List<i8>>", "");
+describe("decodeList: should decode list of numbers", () => {
+  let decoded = decodeList("000000020304", "List<i8>", "", false);
   expect(decoded.length).toBe(1);
   expect(decoded[0].length).toBe(2);
   expect(decoded[0][0]).toBe(3);
@@ -671,8 +672,9 @@ describe("decode list of numbers", () => {
 
   let decoded2 = decodeList(
     "00000002000000024b4c000000014b00000001000000034b4c56",
-    "List<List<ManagedBuffer>>",
-    ""
+    "List<ManagedBuffer>",
+    "",
+    false
   );
 
   expect(decoded2.length).toBe(2);
@@ -683,7 +685,7 @@ describe("decode list of numbers", () => {
   expect(decoded2[1][0]).toBe("KLV");
 });
 
-describe("decode list of struct", () => {
+describe("decodeStruct: should struct with option types", () => {
   let abi = JSON.stringify({
     types: {
       Testing: {
@@ -720,7 +722,7 @@ describe("decode list of struct", () => {
   expect(result.m_opt_2).toBe("Teste2");
 });
 
-describe("decode struct with Optionals and List", () => {
+describe("decodeList: should decode struct with Optionals and List", () => {
   const abi = JSON.stringify({
     types: {
       CrowdfundingData: {
@@ -778,15 +780,476 @@ describe("decode struct with Optionals and List", () => {
   const hex =
     "000000107072696d656972612d76616b696e6861000000105072696d656972612056616b696e68610000003b66696e746563682e636f6d2e62722f6170702f75706c6f6164732f323031392f30382f6f2d7175652d652d63726f776466756e64696e672e6a706700000015756d612064657363726963616f206d616e65697261f64e21227e8df59be638d00acfafdeb70d6a678d6eee4d929cbb143bb1edc3e6000000034b4c5600000000000000000000000502540be40000000000000000000000000065ecfd9f";
 
-  const type = "List<CrowdfundingData>";
-  const result = decodeList(hex, type, abi);
+  const type = "CrowdfundingData";
+  const result = decodeList(hex, type, abi, false);
 
   expect(result.length).toBe(1);
 
   const hex2 =
     "000000107072696d656972612d76616b696e6861000000105072696d656972612056616b696e68610000003b66696e746563682e636f6d2e62722f6170702f75706c6f6164732f323031392f30382f6f2d7175652d652d63726f776466756e64696e672e6a706700000015756d612064657363726963616f206d616e65697261f64e21227e8df59be638d00acfafdeb70d6a678d6eee4d929cbb143bb1edc3e6000000034b4c5600000000000000000000000502540be40000000000000000000000000065ecfd9f0000000f736567756e64612d76616b696e68610000000f536567756e64612056616b696e68610000003b66696e746563682e636f6d2e62722f6170702f75706c6f6164732f323031392f30382f6f2d7175652d652d63726f776466756e64696e672e6a706700000015756d612064657363726963616f206d616e65697261f64e21227e8df59be638d00acfafdeb70d6a678d6eee4d929cbb143bb1edc3e6000000034b4c5600000000000000000000000502540be40000000000000000000000000065ecfd9f";
-  const type2 = "List<CrowdfundingData>";
-  const result2 = decodeList(hex2, type2, abi);
+  const type2 = "CrowdfundingData";
+  const result2 = decodeList(hex2, type2, abi, false);
 
   expect(result2.length).toBe(2);
+});
+
+describe("decodeList: decode default types on List", () => {
+  const abi = JSON.stringify({
+    types: {
+      CrowdfundingData: {
+        type: "struct",
+        fields: [
+          {
+            name: "id",
+            type: "bytes",
+          },
+          {
+            name: "title",
+            type: "bytes",
+          },
+          {
+            name: "logo",
+            type: "bytes",
+          },
+          {
+            name: "description",
+            type: "bytes",
+          },
+          {
+            name: "owner",
+            type: "Address",
+          },
+          {
+            name: "token",
+            type: "TokenIdentifier",
+          },
+          {
+            name: "balance",
+            type: "BigUint",
+          },
+          {
+            name: "claimed",
+            type: "BigUint",
+          },
+          {
+            name: "target",
+            type: "BigUint",
+          },
+          {
+            name: "donators",
+            type: "u64",
+          },
+          {
+            name: "deadline",
+            type: "u64",
+          },
+        ],
+      },
+    },
+  });
+
+  const hex =
+    "000000107072696d656972612d76616b696e6861000000105072696d656972612056616b696e68610000003b66696e746563682e636f6d2e62722f6170702f75706c6f6164732f323031392f30382f6f2d7175652d652d63726f776466756e64696e672e6a706700000015756d612064657363726963616f206d616e65697261f64e21227e8df59be638d00acfafdeb70d6a678d6eee4d929cbb143bb1edc3e6000000034b4c5600000000000000000000000502540be40000000000000000000000000065ecfd9f";
+
+  const type = "CrowdfundingData";
+  const result = decodeList(hex, type, abi, false);
+
+  expect(result.length).toBe(1);
+
+  const hex2 =
+    "000000107072696d656972612d76616b696e6861000000105072696d656972612056616b696e68610000003b66696e746563682e636f6d2e62722f6170702f75706c6f6164732f323031392f30382f6f2d7175652d652d63726f776466756e64696e672e6a706700000015756d612064657363726963616f206d616e65697261f64e21227e8df59be638d00acfafdeb70d6a678d6eee4d929cbb143bb1edc3e6000000034b4c5600000000000000000000000502540be40000000000000000000000000065ecfd9f0000000f736567756e64612d76616b696e68610000000f536567756e64612056616b696e68610000003b66696e746563682e636f6d2e62722f6170702f75706c6f6164732f323031392f30382f6f2d7175652d652d63726f776466756e64696e672e6a706700000015756d612064657363726963616f206d616e65697261f64e21227e8df59be638d00acfafdeb70d6a678d6eee4d929cbb143bb1edc3e6000000034b4c5600000000000000000000000502540be40000000000000000000000000065ecfd9f";
+  const type2 = "CrowdfundingData";
+  const result2 = decodeList(hex2, type2, abi, false);
+
+  expect(result2.length).toBe(2);
+});
+
+describe("decodeList: should decode variadic List", () => {
+  const hex =
+    "00000002000000034b4649000000041dcd6500000000034b4649000000041dcd6500";
+
+  const abi = JSON.stringify({
+    types: {
+      Value: {
+        type: "struct",
+        fields: [
+          {
+            name: "token_identifier",
+            type: "TokenIdentifier",
+          },
+          {
+            name: "amount",
+            type: "BigUint",
+          },
+        ],
+      },
+    },
+  });
+
+  const type = "Value";
+  const result = decodeList(hex, type, abi, true);
+
+  expect(result.length).toBe(2);
+  expect(result[0].token_identifier).toBe("KFI");
+  expect(result[0].amount).toBe(BigInt(500000000));
+  expect(result[1].token_identifier).toBe("KFI");
+  expect(result[1].amount).toBe(BigInt(500000000));
+});
+
+describe("decode: should decode variadic List", () => {
+  const hex =
+    "00000002000000034b4649000000041dcd6500000000034b4649000000041dcd6500";
+
+  const abi = JSON.stringify({
+    endpoints: [
+      {
+        name: "getValue",
+        mutability: "readonly",
+        outputs: [
+          {
+            type: "variadic<Value>",
+            multi_result: true,
+          },
+        ],
+      },
+    ],
+    types: {
+      Value: {
+        type: "struct",
+        fields: [
+          {
+            name: "token_identifier",
+            type: "TokenIdentifier",
+          },
+          {
+            name: "amount",
+            type: "BigUint",
+          },
+        ],
+      },
+    },
+  });
+
+  const type = "Value";
+  const result = decode(abi, hex, "getValue");
+
+  expect(result.length).toBe(2);
+  expect(result[0].token_identifier).toBe("KFI");
+  expect(result[0].amount).toBe(BigInt(500000000));
+  expect(result[1].token_identifier).toBe("KFI");
+  expect(result[1].amount).toBe(BigInt(500000000));
+});
+
+describe("decode: should struct with option types", () => {
+  let abi = JSON.stringify({
+    endpoints: [
+      {
+        name: "getTesting",
+        mutability: "readonly",
+        outputs: [
+          {
+            type: "Testing",
+          },
+        ],
+      },
+    ],
+    types: {
+      Testing: {
+        type: "struct",
+        fields: [
+          {
+            name: "opt_1",
+            type: "Option<bytes>",
+          },
+          {
+            name: "opt_2",
+            type: "Option<bytes>",
+          },
+          {
+            name: "m_opt_1",
+            type: "Option<bytes>",
+          },
+          {
+            name: "m_opt_2",
+            type: "Option<bytes>",
+          },
+        ],
+      },
+    },
+  });
+
+  let hex = "0001000000055465737465000100000006546573746532";
+  let result = decode(abi, hex, "getTesting");
+
+  expect(result.opt_1).toBe(null);
+  expect(result.opt_2).toBe("Teste");
+  expect(result.m_opt_1).toBe(null);
+  expect(result.m_opt_2).toBe("Teste2");
+});
+
+describe("decode: should decode all values", () => {
+  const abi = JSON.stringify({
+    endpoints: [
+      {
+        name: "getu64",
+        mutability: "readonly",
+        outputs: [
+          {
+            type: "u64",
+          },
+        ],
+      },
+      {
+        name: "getu32",
+        mutability: "readonly",
+        outputs: [
+          {
+            type: "u32",
+          },
+        ],
+      },
+      {
+        name: "getu16",
+        mutability: "readonly",
+        outputs: [
+          {
+            type: "u16",
+          },
+        ],
+      },
+      {
+        name: "getu8",
+        mutability: "readonly",
+        outputs: [
+          {
+            type: "u8",
+          },
+        ],
+      },
+      {
+        name: "geti64",
+        mutability: "readonly",
+        outputs: [
+          {
+            type: "i64",
+          },
+        ],
+      },
+      {
+        name: "getBigUint",
+        mutability: "readonly",
+        outputs: [
+          {
+            type: "BigUint",
+          },
+        ],
+      },
+      {
+        name: "getBigInt",
+        mutability: "readonly",
+        outputs: [
+          {
+            type: "BigInt",
+          },
+        ],
+      },
+      {
+        name: "getManagedBuffer",
+        mutability: "readonly",
+        outputs: [
+          {
+            type: "ManagedBuffer",
+          },
+        ],
+      },
+      {
+        name: "getTokenIdentifier",
+        mutability: "readonly",
+        outputs: [
+          {
+            type: "TokenIdentifier",
+          },
+        ],
+      },
+      {
+        name: "getBool",
+        mutability: "readonly",
+        outputs: [
+          {
+            type: "bool",
+          },
+        ],
+      },
+      {
+        name: "getOptionManagedBuffer",
+        mutability: "readonly",
+        outputs: [
+          {
+            type: "Option<ManagedBuffer>",
+          },
+        ],
+      },
+    ],
+  });
+
+  let values = [
+    {
+      purpose: "Should decode 0a to 10 as u64",
+      hexValue: "0a",
+      endpoint: "getu64",
+      expected: BigInt(10),
+    },
+    {
+      purpose: "Should decode 0a to 10 as u32",
+      hexValue: "0a",
+      endpoint: "getu32",
+      expected: 10,
+    },
+    {
+      purpose: "Should decode 0a to 10 as u16",
+      hexValue: "0a",
+      endpoint: "getu16",
+      expected: 10,
+    },
+    {
+      purpose: "Should decode 0a to 10 as u8",
+      hexValue: "0a",
+      endpoint: "getu8",
+      expected: 10,
+    },
+    {
+      purpose: "Should decode 0a to 10 as i64",
+      hexValue: "0a",
+      endpoint: "geti64",
+      expected: BigInt(10),
+    },
+    {
+      purpose: "Should decode f6 to -10 as i64",
+      hexValue: "f6",
+      endpoint: "geti64",
+      expected: BigInt(-10),
+    },
+    {
+      purpose: "Should decode 03e8 to 1000 as biguint",
+      hexValue: "03e8",
+      endpoint: "getBigUint",
+      expected: BigInt(1000),
+    },
+    {
+      purpose: "Should decode 64 to 100 as bigint",
+      hexValue: "64",
+      endpoint: "getBigInt",
+      expected: BigInt(100),
+    },
+    {
+      purpose: "Should decode 9c to -100 as bigint",
+      hexValue: "9c",
+      endpoint: "getBigInt",
+      expected: BigInt(-100),
+    },
+    {
+      purpose: "Should decode 5465737465 to 'Teste' as string",
+      hexValue: "5465737465",
+      endpoint: "getManagedBuffer",
+      expected: "Teste",
+    },
+    {
+      purpose: "Should decode 4b4c56 to 'KLV' as string",
+      hexValue: "4b4c56",
+      endpoint: "getTokenIdentifier",
+      expected: "KLV",
+    },
+    {
+      purpose: "Should decode 01 to true as bool",
+      hexValue: "01",
+      endpoint: "getBool",
+      expected: true,
+    },
+    {
+      purpose:
+        "Should decode 8000000000000000 to -9223372036854775808 as BigInt",
+      hexValue: "8000000000000000",
+      endpoint: "getBigInt",
+      expected: BigInt("-9223372036854775808"),
+    },
+    {
+      purpose:
+        "Should decode 01000000055465737465 to Teste as Option<ManagedBuffer>",
+      hexValue: "01000000055465737465",
+      endpoint: "getOptionManagedBuffer",
+      expected: "Teste",
+    },
+    {
+      purpose: "Should decode '' to null as Option<ManagedBuffer>",
+      hexValue: "",
+      endpoint: "getOptionManagedBuffer",
+      expected: null,
+    },
+  ];
+
+  values.map((value) => {
+    it(value.purpose, () => {
+      const result = decode(abi, value.hexValue, value.endpoint);
+      expect(result).toBe(value.expected);
+    });
+  });
+});
+
+describe("decode: should decode a tuple", () => {
+  const abi = JSON.stringify({
+    endpoints: [
+      {
+        name: "getTuple",
+        mutability: "readonly",
+        inputs: [],
+        outputs: [
+          {
+            type: "tuple<BigUint,bytes,Address>",
+          },
+        ],
+      },
+    ],
+  });
+
+  const hex =
+    "0000000203e80000000474657374000000000000000005002e8ba478ded59c31ddea4f6f3a8c39dd5942d167c3e6";
+
+  const result = decode(abi, hex, "getTuple");
+
+  expect(result._0).toBe(BigInt(1000));
+  expect(result._1).toBe("test");
+  expect(result._2).toBe(
+    "klv1qqqqqqqqqqqqqpgq9696g7x76kwrrh02fahn4rpem4v595t8c0nqgxzpmu"
+  );
+});
+
+describe("decode: should decode a tuple with a list inside", () => {
+  const abi = JSON.stringify({
+    endpoints: [
+      {
+        name: "getTuple",
+        mutability: "readonly",
+        inputs: [],
+        outputs: [
+          {
+            type: "tuple<BigUint,List<bytes>,Address>",
+          },
+        ],
+      },
+    ],
+  });
+
+  const hex =
+    "0000000203e8000000020000000474657374000000057465737432000000000000000005002e8ba478ded59c31ddea4f6f3a8c39dd5942d167c3e6";
+
+  const result = decode(abi, hex, "getTuple");
+
+  expect(result._0).toBe(BigInt(1000));
+  expect(result._1).toBeInstanceOf(Array);
+  expect(result._1.length).toBe(2);
+  expect(result._1[0]).toBe("test");
+  expect(result._1[1]).toBe("test2");
+  expect(result._2).toBe(
+    "klv1qqqqqqqqqqqqqpgq9696g7x76kwrrh02fahn4rpem4v595t8c0nqgxzpmu"
+  );
 });
