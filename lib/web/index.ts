@@ -1,4 +1,5 @@
 import {
+  IAccount,
   IBroadcastResponse,
   IContractRequest,
   IProvider,
@@ -32,6 +33,40 @@ const getProvider = (): IProvider => {
 const setProvider = (pvd: IProvider) => {
   globalThis?.kleverWeb?.setProvider(pvd);
   return;
+};
+
+const getBalance = async (): Promise<number> => {
+  if (!isKleverWebActive()) {
+    throw ErrLoadKleverWeb;
+  }
+
+  return globalThis?.kleverWeb?.getBalance();
+};
+
+const getAssetBalance = async (assetId: string): Promise<number> => {
+  if (!isKleverWebActive()) {
+    throw ErrLoadKleverWeb;
+  }
+
+  return globalThis?.kleverWeb?.getAssetBalance(assetId);
+};
+
+const getAccountDetails = async (): Promise<IAccount> => {
+  if (!isKleverWebActive()) {
+    throw ErrLoadKleverWeb;
+  }
+
+  return globalThis?.kleverWeb?.getAccountDetails();
+};
+
+const getAssetBalanceAndPrecision = async (
+  assetId: string
+): Promise<{ balance: number; precision: number }> => {
+  if (!isKleverWebActive()) {
+    throw ErrLoadKleverWeb;
+  }
+
+  return globalThis?.kleverWeb?.getAssetBalanceAndPrecision(assetId);
 };
 
 const broadcastTransactions = async (
@@ -110,6 +145,10 @@ const web = {
   getWalletAddress,
   getProvider,
   setProvider,
+  getBalance,
+  getAssetBalance,
+  getAccountDetails,
+  getAssetBalanceAndPrecision,
 };
 
 export default web;
