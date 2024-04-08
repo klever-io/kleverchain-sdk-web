@@ -13,13 +13,13 @@ export function twosComplement(
 
   if (!isNested) {
     bitsSize = Math.ceil(Math.log2(value + 1));
+    if (bitsSize % 8 !== 0) {
+      bitsSize = Math.ceil(bitsSize / 8) * 8;
+    }
   }
 
   let bits = value.toString(2);
-
-  if (isNested) {
-    bits = bits.padStart(bitsSize, "0");
-  }
+  bits = bits.padStart(bitsSize, "0");
 
   let complement = "";
 
