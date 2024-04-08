@@ -23,10 +23,12 @@ export function twosComplement(
 
   let complement = "";
 
+  //invert bytes
   for (let i = 0; i < bitsSize; i++) {
     complement += bits[i] === "0" ? "1" : "0";
   }
 
+  //add 1
   for (let i = bitsSize - 1; i >= 0; i--) {
     if (complement[i] === "0") {
       complement = complement.slice(0, i) + "1" + complement.slice(i + 1);
