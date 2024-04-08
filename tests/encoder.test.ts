@@ -31,28 +31,7 @@ describe("utils", () => {
   });
 });
 
-describe("encoder", () => {
-  it("should encode number correctly", () => {
-    const value = 1;
-    const type = "u64";
-    expect(abiEncoder.encodeABIValue(value, type)).toBe("0000000000000001");
-  });
-  it("should encode negative number correctly", () => {
-    const value = -1;
-    const type = "i64";
-    expect(abiEncoder.encodeABIValue(value, type)).toBe("ffffffffffffffff");
-  });
-  it("should encode string correctly", () => {
-    const value = "hello";
-    const type = "String";
-    expect(abiEncoder.encodeABIValue(value, type)).toBe("0000000568656c6c6f");
-  });
-  it("should encode big number correctly", () => {
-    const value = 255;
-    const type = "u64";
-    expect(abiEncoder.encodeABIValue(value, type)).toBe("00000000000000ff");
-  });
-
+describe("address encoder", () => {
   it("should encode address correctly", () => {
     const address =
       "klv1fpwjz234gy8aaae3gx0e8q9f52vymzzn3z5q0s5h60pvktzx0n0qwvtux5";
@@ -60,5 +39,83 @@ describe("encoder", () => {
     expect(encoded).toBe(
       "485d212a35410fdef731419f9380a9a2984d885388a807c297d3c2cb2c467cde"
     );
+  });
+});
+
+describe("nested encoder", () => {
+  it("should encode number correctly", () => {
+    const value = 1;
+    const type = "u64";
+    expect(abiEncoder.encodeABIValue(value, type, true)).toBe(
+      "0000000000000001"
+    );
+  });
+  it("should encode negative number correctly", () => {
+    const value = -1;
+    const type = "i64";
+    expect(abiEncoder.encodeABIValue(value, type, true)).toBe(
+      "ffffffffffffffff"
+    );
+  });
+  it("should encode negative number correctly", () => {
+    const value = -17;
+    const type = "i64";
+    expect(abiEncoder.encodeABIValue(value, type, true)).toBe(
+      "ffffffffffffffef"
+    );
+  });
+  it("should encode negative number correctly", () => {
+    const value = -287454020;
+    const type = "i64";
+    expect(abiEncoder.encodeABIValue(value, type, true)).toBe(
+      "ffffffffeeddccbc"
+    );
+  });
+  it("should encode string correctly", () => {
+    const value = "hello";
+    const type = "String";
+    expect(abiEncoder.encodeABIValue(value, type, true)).toBe(
+      "0000000568656c6c6f"
+    );
+  });
+  it("should encode big number correctly", () => {
+    const value = 255;
+    const type = "u64";
+    expect(abiEncoder.encodeABIValue(value, type, true)).toBe(
+      "00000000000000ff"
+    );
+  });
+});
+
+describe("top level encoder", () => {
+  it("should encode number correctly", () => {
+    const value = 1;
+    const type = "u64";
+    expect(abiEncoder.encodeABIValue(value, type, false)).toBe("01");
+  });
+  it("should encode negative number correctly", () => {
+    const value = -1;
+    const type = "i64";
+    expect(abiEncoder.encodeABIValue(value, type, false)).toBe("ff");
+  });
+  it("should encode negative number correctly", () => {
+    const value = -17;
+    const type = "i64";
+    expect(abiEncoder.encodeABIValue(value, type, false)).toBe("ef");
+  });
+  it("should encode negative number correctly", () => {
+    const value = -287454020;
+    const type = "i64";
+    expect(abiEncoder.encodeABIValue(value, type, false)).toBe("eeddccbc");
+  });
+  it("should encode string correctly", () => {
+    const value = "hello";
+    const type = "String";
+    expect(abiEncoder.encodeABIValue(value, type, false)).toBe("68656c6c6f");
+  });
+  it("should encode big number correctly", () => {
+    const value = 255;
+    const type = "u64";
+    expect(abiEncoder.encodeABIValue(value, type, false)).toBe("ff");
   });
 });

@@ -13,20 +13,22 @@ export function twosComplement(
 
   if (!isNested) {
     bitsSize = Math.ceil(Math.log2(value + 1));
+    if (bitsSize % 8 !== 0) {
+      bitsSize = Math.ceil(bitsSize / 8) * 8;
+    }
   }
 
   let bits = value.toString(2);
-
-  if (isNested) {
-    bits = bits.padStart(bitsSize, "0");
-  }
+  bits = bits.padStart(bitsSize, "0");
 
   let complement = "";
 
+  //invert bytes
   for (let i = 0; i < bitsSize; i++) {
     complement += bits[i] === "0" ? "1" : "0";
   }
 
+  //add 1
   for (let i = bitsSize - 1; i >= 0; i--) {
     if (complement[i] === "0") {
       complement = complement.slice(0, i) + "1" + complement.slice(i + 1);
