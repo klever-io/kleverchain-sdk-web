@@ -87,6 +87,43 @@ describe("nested encoder", () => {
   });
 });
 
+describe("recursive encoding", () => {
+  it("should encode top level nested array correctly", () => {
+    const array = [
+      [
+        ["CHIPS-N89A", "KLV", "KFI"],
+        ["TFT-786J", "SJA-LK9H", "QKU-7HH1"],
+      ],
+    ];
+    const encoded = abiEncoder.encodeABIValue(
+      array,
+      "List<List<List<TokenIdentifier>>>",
+      false
+    );
+
+    expect(encoded).toBe(
+      "00000002000000030000000a43484950532d4e383941000000034b4c56000000034b464900000003000000085446542d3738364a00000008534a412d4c4b394800000008514b552d37484831"
+    );
+  });
+  it("should encode nested nested array correctly", () => {
+    const array = [
+      [
+        ["CHIPS-N89A", "KLV", "KFI"],
+        ["TFT-786J", "SJA-LK9H", "QKU-7HH1"],
+      ],
+    ];
+    const encoded = abiEncoder.encodeABIValue(
+      array,
+      "List<List<List<TokenIdentifier>>>",
+      true
+    );
+
+    expect(encoded).toBe(
+      "0000000100000002000000030000000a43484950532d4e383941000000034b4c56000000034b464900000003000000085446542d3738364a00000008534a412d4c4b394800000008514b552d37484831"
+    );
+  });
+});
+
 describe("top level encoder", () => {
   it("should encode number correctly", () => {
     const value = 1;
