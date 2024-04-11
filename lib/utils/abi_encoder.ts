@@ -77,29 +77,44 @@ export function encodeBigNumber(value: number, isNested = true) {
   return length + hex;
 }
 
-export function encodeLengthPlusData(value: string | any[], isNested = true) {
+export function encodeLengthPlusData(
+  value: string | any[],
+  innerType: string,
+  isNested = true
+): string | string[] {
   let data;
-  if (typeof value === "string") {
-    data = toByteArray(value);
+  if (typeof value !== "string") {
+    data = value
+      .map((v) => {
+        return encodeABIValue(v, innerType, true);
+      })
+      .join("");
+
+    const length = value.length.toString(16).padStart(8, "0");
+
+    if (!isNested) {
+      return data;
+    }
+
+    return length + data;
   } else {
-    data = value;
+    data = toByteArray(value as string);
+
+    if (data.length === 0) {
+      return "";
+    }
+
+    const dataHex = Array.from(data)
+      .map((byte) => byte.toString(16).padStart(2, "0"))
+      .join("");
+
+    if (!isNested) {
+      return dataHex;
+    }
+
+    const length = data.length.toString(16).padStart(8, "0");
+    return length + dataHex;
   }
-
-  if (data.length === 0) {
-    return "";
-  }
-
-  const dataHex = Array.from(data)
-    .map((byte) => byte.toString(16).padStart(2, "0"))
-    .join("");
-
-  if (!isNested) {
-    return dataHex;
-  }
-
-  const length = data.length.toString(16).padStart(8, "0");
-
-  return length + dataHex;
 }
 
 export function toByteArray(str: string) {
@@ -120,7 +135,11 @@ const padValue = (value: string, length: number, isNested = true) => {
   return value;
 };
 
-export const encodeABIValue = (value: any, type: string, isNested = true) => {
+export const encodeABIValue = (
+  value: any,
+  type: string,
+  isNested = true
+): string => {
   const outerType = getCleanType(type, false).split("<")[0];
 
   let typeParsedValue = value;
@@ -181,7 +200,13 @@ export const encodeABIValue = (value: any, type: string, isNested = true) => {
     case "TokenIdentifier":
     case "List":
     case "Array":
-      return encodeLengthPlusData(typeParsedValue, isNested);
+      const innerType = type.slice(type.indexOf("<") + 1, type.length - 1);
+
+      return encodeLengthPlusData(
+        typeParsedValue,
+        innerType,
+        isNested
+      ) as string;
     case "Address":
       return encodeAddress(typeParsedValue);
     default:
