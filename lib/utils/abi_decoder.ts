@@ -41,46 +41,43 @@ const decodeUint = (hexValue: string, len: number): DecodeResult => {
 };
 
 const decodeInt16 = (hexValue: string): DecodeResult => {
-  let data = parseInt(hexValue.slice(0, 4), 16) >>> 0;
-  const newHex = hexValue.slice(4);
+  let data = parseInt(hexValue.slice(0, 4), 16);  
+  const newHex = hexValue.slice(4);  
 
-  if (data & 0x8000) {
-    data = -((~data + 1) & 0xffff);
+  if (data & 0x8000) {  
+    data = data - 0x10000;  
   }
 
   return { data, newHex };
 };
 
 const decodeInt8 = (hexValue: string): DecodeResult => {
-  let data = parseInt(hexValue.slice(0, 2), 16) >>> 0;
-  const newHex = hexValue.slice(2);
+  let data = parseInt(hexValue.slice(0, 2), 16);  
+  const newHex = hexValue.slice(2); 
 
-  if (data & 0x80) {
-    data = -((~data + 1) & 0xff);
+  if (data & 0x80) {  
+    data = data - 0x100;
   }
 
   return { data, newHex };
 };
 
 const decodeInt32 = (hexValue: string): DecodeResult => {
-  let data = parseInt(hexValue.slice(0, 8), 16) >>> 0;
-  const newHex = hexValue.slice(8);
-
+  let data = parseInt(hexValue.slice(0, 8), 16);
   if (data & 0x80000000) {
-    data = -((~data + 1) & 0xffffffff);
-    data = data * -1;
+    data = data - 0x100000000; 
   }
-
+  const newHex = hexValue.slice(8);
   return { data, newHex };
 };
 
+
 const decodeInt64 = (hexValue: string): DecodeResult => {
   let data = hexToBigInt(hexValue.slice(0, 16));
-  const newHex = hexValue.slice(16);
+  const newHex = hexValue.slice(16);  
 
-  let maxValue = (BigInt(1) << (BigInt(64) - BigInt(1))) - BigInt(1);
-  if (data > maxValue) {
-    data -= BigInt(1) << BigInt(64);
+  if (data & BigInt(0x8000000000000000)) {  
+    data = data - BigInt(0x10000000000000000); 
   }
 
   return { data, newHex };
@@ -239,12 +236,12 @@ const selectDecode = (
 
   if (type.startsWith("variadic<")) {
     type = type.slice(9, -1);
-    return decodeList(hexValue, type, abi, true);
+    return selectDecode(abi,abiJSON,hexValue,type);
   }
 
   if (type.startsWith("List<")) {
     type = type.slice(5, -1);
-    return decodeList(hexValue, type, abi, false);
+    return decodeList(hexValue, type, abi);
   }
 
   if (!abiJSON.types) {
@@ -341,13 +338,18 @@ const decodeSingleValue = (
     case "BigUint":
       return decodeBigUint(hexValue, direct);
     case "BigInt":
-      if (!direct) {
-        return decodeBigInt(hexValue, false);
+      try {
+        const stringResult = decodeString(hexValue,direct)
+        return { newHex: stringResult.newHex, data: BigInt(stringResult.data)}
+      }catch {
+          if (!direct) {
+            return decodeBigInt(hexValue, false);
+          }
+    
+          var decoded = decodeInt(hexValue, 32, direct);
+          decoded.data = BigInt(decoded.data);
+          return decoded;
       }
-
-      var decoded = decodeInt(hexValue, 32, direct);
-      decoded.data = BigInt(decoded.data);
-      return decoded;
     case "Address":
       return decodeAddress(hexValue);
     case "bool":
@@ -458,11 +460,8 @@ export const decodeList = (
   hexValue: string,
   type: string,
   abi: string,
-  variadic?: boolean
 ): any => {
-  if (variadic) {
-    hexValue = hexValue.slice(8);
-  }
+
 
   if (type.startsWith("Option<")) {
     const some = hexValue.slice(0, 2) === "01";
