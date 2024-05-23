@@ -1,8 +1,8 @@
 import {
-  decodeStruct,
-  decodeList,
-  decodeValue,
   decode,
+  decodeList,
+  decodeStruct,
+  decodeValue,
 } from "../lib/utils/abi_decoder";
 
 describe("decodeStruct: should decode simple structure", () => {
@@ -60,92 +60,6 @@ describe("decodeStruct: should decode simple structure", () => {
       "klv1fpwjz234gy8aaae3gx0e8q9f52vymzzn3z5q0s5h60pvktzx0n0qwvtux5"
     );
     expect(result.token_val).toBe("KLV");
-  });
-
-  it("should be capable of decode a list of structs", () => {
-    const abi = JSON.stringify({
-      types: {
-        FundingPackInfo: {
-          type: "struct",
-          fields: [
-            {
-              name: "pack_id",
-              type: "u32",
-            },
-            {
-              name: "lock_time",
-              type: "u64",
-            },
-            {
-              name: "apr_rate",
-              type: "BigUint",
-            },
-            {
-              name: "pack_item",
-              type: "ITOPackItem",
-            },
-          ],
-        },
-        FundingRecord: {
-          type: "struct",
-          fields: [
-            {
-              name: "amount",
-              type: "BigUint",
-            },
-            {
-              name: "claim_date",
-              type: "u64",
-            },
-            {
-              name: "claimed",
-              type: "bool",
-            },
-            {
-              name: "pack_id",
-              type: "u32",
-            },
-          ],
-        },
-        ITOPackItem: {
-          type: "struct",
-          fields: [
-            {
-              name: "amount",
-              type: "BigUint",
-            },
-            {
-              name: "price",
-              type: "BigUint",
-            },
-          ],
-        },
-        Status: {
-          type: "enum",
-          variants: [
-            {
-              name: "FundingPeriod",
-              discriminant: 0,
-            },
-            {
-              name: "Successful",
-              discriminant: 1,
-            },
-            {
-              name: "Failed",
-              discriminant: 2,
-            },
-          ],
-        },
-      },
-    });
-
-    const hex =
-      "0000000100000000000000b4000000010500000003989680000000030f4240000000020000000000000168000000010a0000000401312d00000000030c350000000003000000000000021c000000010f0000000401c9c380000000030927c0";
-
-    const result = decodeList(hex, "FundingPackInfo", abi);
-
-    console.log(result);
   });
 });
 
@@ -949,6 +863,140 @@ describe("decodeList: decode default types on List", () => {
   expect(result2.length).toBe(2);
 });
 
+describe("decodeList: should be capable of decode a list with nested structs", () => {
+  const abi = JSON.stringify({
+    types: {
+      FundingPackInfo: {
+        type: "struct",
+        fields: [
+          {
+            name: "pack_id",
+            type: "u32",
+          },
+          {
+            name: "lock_time",
+            type: "u64",
+          },
+          {
+            name: "apr_rate",
+            type: "BigUint",
+          },
+          {
+            name: "pack_item",
+            type: "ITOPackItem",
+          },
+        ],
+      },
+      FundingRecord: {
+        type: "struct",
+        fields: [
+          {
+            name: "amount",
+            type: "BigUint",
+          },
+          {
+            name: "claim_date",
+            type: "u64",
+          },
+          {
+            name: "claimed",
+            type: "bool",
+          },
+          {
+            name: "pack_id",
+            type: "u32",
+          },
+        ],
+      },
+      ITOPackItem: {
+        type: "struct",
+        fields: [
+          {
+            name: "amount",
+            type: "BigUint",
+          },
+          {
+            name: "price",
+            type: "BigUint",
+          },
+        ],
+      },
+      Status: {
+        type: "enum",
+        variants: [
+          {
+            name: "FundingPeriod",
+            discriminant: 0,
+          },
+          {
+            name: "Successful",
+            discriminant: 1,
+          },
+          {
+            name: "Failed",
+            discriminant: 2,
+          },
+        ],
+      },
+    },
+  });
+
+  const hex =
+    "0000000100000000000000b4000000010500000003989680000000030f4240000000020000000000000168000000010a0000000401312d00000000030c350000000003000000000000021c000000010f0000000401c9c380000000030927c0";
+
+  type PackInfo = {
+    pack_id: number;
+    lock_time: bigint;
+    apr_rate: bigint;
+    pack_item: {
+      amount: bigint;
+      price: bigint;
+    };
+  };
+
+  const type = "FundingPackInfo";
+  const result = decodeList(hex, type, abi) as PackInfo[];
+
+  const expected = [
+    {
+      pack_id: 1,
+      lock_time: BigInt(180),
+      apr_rate: BigInt(5),
+      pack_item: { amount: BigInt(10000000), price: BigInt(1000000) },
+    },
+    {
+      pack_id: 2,
+      lock_time: BigInt(360),
+      apr_rate: BigInt(10),
+      pack_item: { amount: BigInt(20000000), price: BigInt(800000) },
+    },
+    {
+      pack_id: 3,
+      lock_time: BigInt(540),
+      apr_rate: BigInt(15),
+      pack_item: { amount: BigInt(30000000), price: BigInt(600000) },
+    },
+  ];
+
+  expect(result.length).toBe(3);
+
+  let index = 0;
+  test.each(result)("pack_id: $pack_id", (item) => {
+    expect(item.pack_id).toBeDefined();
+    expect(item.lock_time).toBeDefined();
+    expect(item.apr_rate).toBeDefined();
+    expect(item.pack_item.amount).toBeDefined();
+    expect(item.pack_item.price).toBeDefined();
+
+    expect(item.pack_id).toBe(expected[index].pack_id);
+    expect(item.lock_time).toBe(expected[index].lock_time);
+    expect(item.apr_rate).toBe(expected[index].apr_rate);
+    expect(item.pack_item.amount).toBe(expected[index].pack_item.amount);
+    expect(item.pack_item.price).toBe(expected[index].pack_item.price);
+    index++;
+  });
+});
+
 describe("decode: should decode variadic List", () => {
   const abi = JSON.stringify({
     endpoints: [
@@ -996,24 +1044,24 @@ describe("decode: should decode variadic List", () => {
 
   it("should decode WinnersInfo Struct inside a variadic", () => {
     const hex =
-    "00000003667fd274481cf5b07418b2fdc5d8baa6ae717239357f338cde99c2f612a96a9e0000000403938700";
+      "00000003667fd274481cf5b07418b2fdc5d8baa6ae717239357f338cde99c2f612a96a9e0000000403938700";
 
-    const result = decode(abi,hex,"winnersInfo");
+    const result = decode(abi, hex, "winnersInfo");
 
     expect(result?.drawn_ticket_number).toBe(3);
-    expect(result?.winner_address).toBe("klv1velayazgrn6mqaqckt7utk9656h8zu3ex4ln8rx7n8p0vy4fd20qmwh4p5");
+    expect(result?.winner_address).toBe(
+      "klv1velayazgrn6mqaqckt7utk9656h8zu3ex4ln8rx7n8p0vy4fd20qmwh4p5"
+    );
     expect(result?.prize).toBe(BigInt(60000000));
-
-  })
+  });
 
   it("should decode i64 inside a variadic", () => {
-    const hex =
-    "049075ea";
+    const hex = "049075ea";
 
-    const result = decode(abi,hex,"variadic_i64");
+    const result = decode(abi, hex, "variadic_i64");
 
     expect(result).toBe(BigInt(76576234));
-  })
+  });
 });
 
 describe("decode: should struct with option types", () => {
@@ -1254,13 +1302,15 @@ describe("decode: should decode all values", () => {
       expected: BigInt(-100000000),
     },
     {
-      purpose: "Should decode C91131A14FC23DAC to -3958328028584329812 as bigint",
+      purpose:
+        "Should decode C91131A14FC23DAC to -3958328028584329812 as bigint",
       hexValue: "C91131A14FC23DAC",
       endpoint: "getBigInt",
       expected: BigInt("-3958328028584329812"),
     },
     {
-      purpose: "Should decode 36EECE5EB03DC254 to 3958328028584329812 as bigint",
+      purpose:
+        "Should decode 36EECE5EB03DC254 to 3958328028584329812 as bigint",
       hexValue: "36EECE5EB03DC254",
       endpoint: "getBigInt",
       expected: BigInt("3958328028584329812"),
@@ -1284,16 +1334,24 @@ describe("decode: should decode all values", () => {
       expected: BigInt(-10),
     },
     {
-      purpose: "Should decode 393833343735393337343536383932343739363738383930313736393831393038353637383935373639303738353132393836373938323537 to 983475937456892479678890176981908567895769078512986798257 as bigint - string",
-      hexValue: "393833343735393337343536383932343739363738383930313736393831393038353637383935373639303738353132393836373938323537",
+      purpose:
+        "Should decode 393833343735393337343536383932343739363738383930313736393831393038353637383935373639303738353132393836373938323537 to 983475937456892479678890176981908567895769078512986798257 as bigint - string",
+      hexValue:
+        "393833343735393337343536383932343739363738383930313736393831393038353637383935373639303738353132393836373938323537",
       endpoint: "getBigInt",
-      expected: BigInt("983475937456892479678890176981908567895769078512986798257"),
+      expected: BigInt(
+        "983475937456892479678890176981908567895769078512986798257"
+      ),
     },
     {
-      purpose: "Should decode 2d393833343735393337343536383932343739363738383930313736393831393038353637383935373639303738353132393836373938323537 to -983475937456892479678890176981908567895769078512986798257 as bigint - string",
-      hexValue: "2d393833343735393337343536383932343739363738383930313736393831393038353637383935373639303738353132393836373938323537",
+      purpose:
+        "Should decode 2d393833343735393337343536383932343739363738383930313736393831393038353637383935373639303738353132393836373938323537 to -983475937456892479678890176981908567895769078512986798257 as bigint - string",
+      hexValue:
+        "2d393833343735393337343536383932343739363738383930313736393831393038353637383935373639303738353132393836373938323537",
       endpoint: "getBigInt",
-      expected: BigInt("-983475937456892479678890176981908567895769078512986798257"),
+      expected: BigInt(
+        "-983475937456892479678890176981908567895769078512986798257"
+      ),
     },
     {
       purpose: "Should decode 5465737465 to 'Teste' as string",

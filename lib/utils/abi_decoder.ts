@@ -41,21 +41,21 @@ const decodeUint = (hexValue: string, len: number): DecodeResult => {
 };
 
 const decodeInt16 = (hexValue: string): DecodeResult => {
-  let data = parseInt(hexValue.slice(0, 4), 16);  
-  const newHex = hexValue.slice(4);  
+  let data = parseInt(hexValue.slice(0, 4), 16);
+  const newHex = hexValue.slice(4);
 
-  if (data & 0x8000) {  
-    data = data - 0x10000;  
+  if (data & 0x8000) {
+    data = data - 0x10000;
   }
 
   return { data, newHex };
 };
 
 const decodeInt8 = (hexValue: string): DecodeResult => {
-  let data = parseInt(hexValue.slice(0, 2), 16);  
-  const newHex = hexValue.slice(2); 
+  let data = parseInt(hexValue.slice(0, 2), 16);
+  const newHex = hexValue.slice(2);
 
-  if (data & 0x80) {  
+  if (data & 0x80) {
     data = data - 0x100;
   }
 
@@ -65,19 +65,18 @@ const decodeInt8 = (hexValue: string): DecodeResult => {
 const decodeInt32 = (hexValue: string): DecodeResult => {
   let data = parseInt(hexValue.slice(0, 8), 16);
   if (data & 0x80000000) {
-    data = data - 0x100000000; 
+    data = data - 0x100000000;
   }
   const newHex = hexValue.slice(8);
   return { data, newHex };
 };
 
-
 const decodeInt64 = (hexValue: string): DecodeResult => {
   let data = hexToBigInt(hexValue.slice(0, 16));
-  const newHex = hexValue.slice(16);  
+  const newHex = hexValue.slice(16);
 
-  if (data & BigInt(0x8000000000000000)) {  
-    data = data - BigInt(0x10000000000000000); 
+  if (data & BigInt(0x8000000000000000)) {
+    data = data - BigInt(0x10000000000000000);
   }
 
   return { data, newHex };
@@ -236,7 +235,7 @@ const selectDecode = (
 
   if (type.startsWith("variadic<")) {
     type = type.slice(9, -1);
-    return selectDecode(abi,abiJSON,hexValue,type);
+    return selectDecode(abi, abiJSON, hexValue, type);
   }
 
   if (type.startsWith("List<")) {
@@ -299,7 +298,7 @@ const decodeSingleValue = (
   hexValue: string,
   direct: boolean,
   type: string,
-  abi?: string,
+  abi?: string
 ): DecodeResult => {
   if (type.startsWith("Option<")) {
     const some = hexValue.slice(0, 2) === "01";
@@ -340,16 +339,16 @@ const decodeSingleValue = (
       return decodeBigUint(hexValue, direct);
     case "BigInt":
       try {
-        const stringResult = decodeString(hexValue,direct)
-        return { newHex: stringResult.newHex, data: BigInt(stringResult.data)}
-      }catch {
-          if (!direct) {
-            return decodeBigInt(hexValue, false);
-          }
-    
-          var decoded = decodeInt(hexValue, 32, direct);
-          decoded.data = BigInt(decoded.data);
-          return decoded;
+        const stringResult = decodeString(hexValue, direct);
+        return { newHex: stringResult.newHex, data: BigInt(stringResult.data) };
+      } catch {
+        if (!direct) {
+          return decodeBigInt(hexValue, false);
+        }
+
+        var decoded = decodeInt(hexValue, 32, direct);
+        decoded.data = BigInt(decoded.data);
+        return decoded;
       }
     case "Address":
       return decodeAddress(hexValue);
@@ -365,8 +364,8 @@ const decodeSingleValue = (
     case "TokenIdentifier":
       return decodeString(hexValue, direct);
     default:
-      if (abi?.length !== 0) {
-        return decodeStruct(hexValue, type, abi as string)
+      if (abi) {
+        return decodeSingleStruct(hexValue, type, abi);
       }
       return { error: `Invalid type: ${type}`, data: null, newHex: hexValue };
   }
@@ -411,7 +410,12 @@ const decodeListHandle = (
   const result: any = {};
 
   typeDef.fields.map((item: IAbiItem) => {
-    decodedValue = decodeSingleValue(newHex, false, item.type, JSON.stringify(abiJson));
+    decodedValue = decodeSingleValue(
+      newHex,
+      false,
+      item.type,
+      JSON.stringify(abiJson)
+    );
     if (decodedValue.error) {
       throw new Error(decodedValue.error);
     }
@@ -463,10 +467,8 @@ const decodeListValue = (
 export const decodeList = (
   hexValue: string,
   type: string,
-  abi: string,
+  abi: string
 ): any => {
-
-
   if (type.startsWith("Option<")) {
     const some = hexValue.slice(0, 2) === "01";
     hexValue = hexValue.slice(2);
@@ -506,11 +508,15 @@ export const decodeValue = (hexValue: string, type: string): any => {
   return decodeSingleValue(hexValue, true, type).data;
 };
 
-export const decodeStruct = (
+export const decodeStruct = (hexValue: string, type: string, abi: string) => {
+  return decodeSingleStruct(hexValue, type, abi).data;
+};
+
+const decodeSingleStruct = (
   hexValue: string,
   type: string,
   abi: string
-): any => {
+): DecodeResult => {
   if (type.startsWith("Option<")) {
     const some = hexValue.slice(0, 2) === "01";
     hexValue = hexValue.slice(2);
@@ -560,7 +566,7 @@ export const decodeStruct = (
     hexValue = decoded.newHex;
   });
 
-  return result;
+  return { data: result, newHex: hexValue };
 };
 
 const abiDecoder = {
