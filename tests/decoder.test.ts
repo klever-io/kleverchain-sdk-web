@@ -61,6 +61,92 @@ describe("decodeStruct: should decode simple structure", () => {
     );
     expect(result.token_val).toBe("KLV");
   });
+
+  it("should be capable of decode a list of structs", () => {
+    const abi = JSON.stringify({
+      types: {
+        FundingPackInfo: {
+          type: "struct",
+          fields: [
+            {
+              name: "pack_id",
+              type: "u32",
+            },
+            {
+              name: "lock_time",
+              type: "u64",
+            },
+            {
+              name: "apr_rate",
+              type: "BigUint",
+            },
+            {
+              name: "pack_item",
+              type: "ITOPackItem",
+            },
+          ],
+        },
+        FundingRecord: {
+          type: "struct",
+          fields: [
+            {
+              name: "amount",
+              type: "BigUint",
+            },
+            {
+              name: "claim_date",
+              type: "u64",
+            },
+            {
+              name: "claimed",
+              type: "bool",
+            },
+            {
+              name: "pack_id",
+              type: "u32",
+            },
+          ],
+        },
+        ITOPackItem: {
+          type: "struct",
+          fields: [
+            {
+              name: "amount",
+              type: "BigUint",
+            },
+            {
+              name: "price",
+              type: "BigUint",
+            },
+          ],
+        },
+        Status: {
+          type: "enum",
+          variants: [
+            {
+              name: "FundingPeriod",
+              discriminant: 0,
+            },
+            {
+              name: "Successful",
+              discriminant: 1,
+            },
+            {
+              name: "Failed",
+              discriminant: 2,
+            },
+          ],
+        },
+      },
+    });
+
+    const hex =
+      "0000000100000000000000b4000000010500000003989680000000030f4240000000020000000000000168000000010a0000000401312d00000000030c350000000003000000000000021c000000010f0000000401c9c380000000030927c0";
+
+    const result = decodeList(hex, "FundingPackInfo", abi);
+
+    console.log(result);
+  });
 });
 
 describe("decodeStruct: should decode simple structure with default and zeros", () => {

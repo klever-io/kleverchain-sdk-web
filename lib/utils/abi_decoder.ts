@@ -298,7 +298,8 @@ const generateTupleType = (types: string[]): any => {
 const decodeSingleValue = (
   hexValue: string,
   direct: boolean,
-  type: string
+  type: string,
+  abi?: string,
 ): DecodeResult => {
   if (type.startsWith("Option<")) {
     const some = hexValue.slice(0, 2) === "01";
@@ -364,6 +365,9 @@ const decodeSingleValue = (
     case "TokenIdentifier":
       return decodeString(hexValue, direct);
     default:
+      if (abi?.length !== 0) {
+        return decodeStruct(hexValue, type, abi as string)
+      }
       return { error: `Invalid type: ${type}`, data: null, newHex: hexValue };
   }
 };
@@ -407,7 +411,7 @@ const decodeListHandle = (
   const result: any = {};
 
   typeDef.fields.map((item: IAbiItem) => {
-    decodedValue = decodeSingleValue(newHex, false, item.type);
+    decodedValue = decodeSingleValue(newHex, false, item.type, JSON.stringify(abiJson));
     if (decodedValue.error) {
       throw new Error(decodedValue.error);
     }
