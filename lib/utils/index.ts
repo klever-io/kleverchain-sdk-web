@@ -36,9 +36,7 @@ export const getCleanType = (abiType: string, toLower = true) => {
   const isOptional = abiType.toLowerCase().startsWith("option");
   let cleanType = isOptional ? (abiType.match(/<(.*)>/) || [])[1] : abiType;
 
-  cleanType = cleanType;
-
-  cleanType = cleanType.split("<")[0];
+  if (isOptional) cleanType = cleanType.split("<")[0];
 
   if (toLower) {
     cleanType = cleanType.toLowerCase();
@@ -47,7 +45,7 @@ export const getCleanType = (abiType: string, toLower = true) => {
 };
 
 export const getJSType = (abiType: string): string => {
-  const cleanType = getCleanType(abiType);
+  const cleanType = getCleanType(abiType, true);
 
   for (const [key, values] of Object.entries(ABITypeMap)) {
     if (values.includes(cleanType)) {
@@ -55,7 +53,7 @@ export const getJSType = (abiType: string): string => {
     }
   }
 
-  return "object";
+  return abiType;
 };
 
 const utils = {
