@@ -34,14 +34,20 @@ export const parseAccountPermissionBinaryOperations = (
 
 export const getCleanType = (abiType: string, toLower = true) => {
   const isOptional = abiType.toLowerCase().startsWith("option");
-  let cleanType = isOptional ? (abiType.match(/<(.*)>/) || [])[1] : abiType;
 
-  if (isOptional) cleanType = cleanType.split("<")[0];
+  if (isOptional) {
+    let matches = abiType.match(/<(.*)>/);
+    if (matches && matches.length > 1) abiType = matches[1];
+  }
+
+  if (!Object.values(ABITypeMap).flat().includes(abiType)) {
+    abiType = abiType.split("<")[0]; // Remove
+  }
 
   if (toLower) {
-    cleanType = cleanType.toLowerCase();
+    abiType = abiType.toLowerCase();
   }
-  return cleanType;
+  return abiType;
 };
 
 export const getJSType = (abiType: string): string => {
