@@ -41,7 +41,7 @@ export const getCleanType = (abiType: string, toLower = true) => {
   }
 
   if (!Object.values(ABITypeMap).flat().includes(abiType)) {
-    abiType = abiType.split("<")[0]; // Remove
+    abiType = abiType.split("<")[0]; // Remove Generics
   }
 
   if (toLower) {
