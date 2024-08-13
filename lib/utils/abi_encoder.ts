@@ -1,6 +1,6 @@
 import { bech32 } from "bech32";
-import { getCleanType, getJSType } from ".";
 import { Buffer } from "buffer";
+import { getCleanType, getJSType } from ".";
 
 export function twosComplement(
   value: number,
@@ -209,6 +209,12 @@ export const encodeABIValue = (
       ) as string;
     case "Address":
       return encodeAddress(typeParsedValue);
+    case "variadic":
+    case "multi":
+      const innerType1 = type.slice(type.indexOf("<") + 1, type.length - 1);
+
+      console.log({ innerType1 });
+      return encodeVariadic(typeParsedValue, innerType1);
     default:
       return typeParsedValue;
   }
@@ -234,6 +240,21 @@ export function encodeAddress(value: string) {
   }
 
   return pubkey.toString("hex");
+}
+export function encodeVariadic(value: any[], type: string) {
+  console.log({ value });
+  if (!type.includes("<")) {
+    const types = type.split(",");
+    const values = types.map((type, index) =>
+      encodeABIValue(value[index], type, false)
+    );
+    return values.join("@");
+  }
+  const encodedValues = value.map((item, index) =>
+    encodeABIValue(value[index], type, false)
+  );
+
+  return encodedValues.join("@");
 }
 
 const abiEncoder = {
