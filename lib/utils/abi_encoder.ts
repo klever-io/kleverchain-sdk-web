@@ -142,6 +142,7 @@ export const encodeABIValue = (
   isNested = true
 ): string => {
   const outerType = getCleanType(type, false).split("<")[0];
+  const innerType = type.slice(type.indexOf("<") + 1, type.length - 1);
 
   let typeParsedValue = value;
   const jsType = getJSType(type);
@@ -201,8 +202,6 @@ export const encodeABIValue = (
     case "TokenIdentifier":
     case "List":
     case "Array":
-      const innerType = type.slice(type.indexOf("<") + 1, type.length - 1);
-
       return encodeLengthPlusData(
         typeParsedValue,
         innerType,
@@ -212,8 +211,7 @@ export const encodeABIValue = (
       return encodeAddress(typeParsedValue);
     case "variadic":
     case "multi":
-      const innerType1 = type.slice(type.indexOf("<") + 1, type.length - 1);
-      return encodeVariadic(typeParsedValue, innerType1);
+      return encodeVariadic(typeParsedValue, innerType);
     default:
       return typeParsedValue;
   }
