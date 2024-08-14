@@ -155,7 +155,7 @@ describe("top level encoder", () => {
     const type = "u64";
     expect(abiEncoder.encodeABIValue(value, type, false)).toBe("ff");
   });
-  it("should encode big number correctly", () => {
+  it("should encode arrays correctly", () => {
     const value = [
       ["klv1velayazgrn6mqaqckt7utk9656h8zu3ex4ln8rx7n8p0vy4fd20qmwh4p5", "KLV"],
       ["klv1velayazgrn6mqaqckt7utk9656h8zu3ex4ln8rx7n8p0vy4fd20qmwh4p5", "KFI"],
@@ -166,7 +166,7 @@ describe("top level encoder", () => {
       "667fd274481cf5b07418b2fdc5d8baa6ae717239357f338cde99c2f612a96a9e@4b4c56@667fd274481cf5b07418b2fdc5d8baa6ae717239357f338cde99c2f612a96a9e@4b4649"
     );
   });
-  it.only("should encode big number correctly", () => {
+  it("should encode arrays correctly", () => {
     const value = [
       ["klv1velayazgrn6mqaqckt7utk9656h8zu3ex4ln8rx7n8p0vy4fd20qmwh4p5", "KLV"],
       ["klv1velayazgrn6mqaqckt7utk9656h8zu3ex4ln8rx7n8p0vy4fd20qmwh4p5", "KFI"],
