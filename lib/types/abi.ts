@@ -31,4 +31,5 @@ export const ABITypeMap = {
   ].map((type) => type.toLowerCase()),
   array: ["Tuple", "Array", "List"].map((type) => type.toLowerCase()),
   checkbox: ["bool"],
+  variadic: ["multi", "variadic"].map((type) => type.toLowerCase()),
 };

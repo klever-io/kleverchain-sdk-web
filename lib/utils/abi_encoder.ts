@@ -1,6 +1,7 @@
 import { bech32 } from "bech32";
-import { getCleanType, getJSType } from ".";
 import { Buffer } from "buffer";
+import { getCleanType, getJSType } from ".";
+import { ABITypeMap } from "../types/abi";
 
 export function twosComplement(
   value: number,
@@ -141,6 +142,7 @@ export const encodeABIValue = (
   isNested = true
 ): string => {
   const outerType = getCleanType(type, false).split("<")[0];
+  const innerType = type.slice(type.indexOf("<") + 1, type.length - 1);
 
   let typeParsedValue = value;
   const jsType = getJSType(type);
@@ -200,8 +202,6 @@ export const encodeABIValue = (
     case "TokenIdentifier":
     case "List":
     case "Array":
-      const innerType = type.slice(type.indexOf("<") + 1, type.length - 1);
-
       return encodeLengthPlusData(
         typeParsedValue,
         innerType,
@@ -209,6 +209,9 @@ export const encodeABIValue = (
       ) as string;
     case "Address":
       return encodeAddress(typeParsedValue);
+    case "variadic":
+    case "multi":
+      return encodeVariadic(typeParsedValue, innerType);
     default:
       return typeParsedValue;
   }
@@ -234,6 +237,32 @@ export function encodeAddress(value: string) {
   }
 
   return pubkey.toString("hex");
+}
+export function encodeVariadic(value: any[], type: string) {
+  let hasInnerType = false;
+  if (type.includes("<")) {
+    const types = type.split(",");
+    const innerType = types.find((item) => item.includes("<"));
+
+    hasInnerType = !!Object.values(ABITypeMap)
+      .flat()
+      .find((item) => {
+        return item === innerType?.toLowerCase();
+      });
+  }
+
+  if ((type.includes("<") && hasInnerType) || !type.includes("<")) {
+    const types = type.split(",");
+    const values = types.map((type, index) =>
+      encodeABIValue(value[index], type, false)
+    );
+    return values.join("@");
+  }
+  const encodedValues = value.map((item, index) =>
+    encodeABIValue(value[index], type, false)
+  );
+
+  return encodedValues.join("@");
 }
 
 const abiEncoder = {
