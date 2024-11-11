@@ -33,3 +33,12 @@ export const ABITypeMap = {
   checkbox: ["bool"],
   variadic: ["multi", "variadic"].map((type) => type.toLowerCase()),
 };
+
+export type ABITypeJSON = {
+  types: {
+    [key: string]: {
+      type: string;
+      fields: { name: string; type: string }[];
+    };
+  };
+};

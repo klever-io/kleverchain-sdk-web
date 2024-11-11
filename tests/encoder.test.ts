@@ -31,6 +31,102 @@ describe("utils", () => {
   });
 });
 
+describe("custom encode", () => {
+  const mockAbi = JSON.stringify({
+    types: {
+      Foo: {
+        type: "struct",
+        fields: [
+          {
+            name: "bar",
+            type: "bytes",
+          },
+        ],
+      },
+      Teste: {
+        type: "struct",
+        fields: [
+          {
+            name: "title",
+            type: "bytes",
+          },
+          {
+            name: "ok",
+            type: "bool",
+          },
+          {
+            name: "u32_val",
+            type: "u32",
+          },
+          {
+            name: "u64_val",
+            type: "u64",
+          },
+          {
+            name: "biguint_val",
+            type: "BigUint",
+          },
+          {
+            name: "address_val",
+            type: "Address",
+          },
+          {
+            name: "token_val",
+            type: "TokenIdentifier",
+          },
+          {
+            name: "opt_val",
+            type: "Option<bool>",
+          },
+          {
+            name: "opt_val2",
+            type: "Option<bool>",
+          },
+          {
+            name: "opt_val3",
+            type: "Option<bool>",
+          },
+          {
+            name: "list",
+            type: "List<bool>",
+          },
+          {
+            name: "custom_list",
+            type: "List<Foo>",
+          },
+          {
+            name: "custom_type",
+            type: "Foo",
+          },
+        ],
+      },
+    },
+  });
+
+  it("should encode custom struct correctly", () => {
+    const value = {
+      title: "Teste",
+      ok: true,
+      u32_val: 10,
+      u64_val: BigInt(20),
+      biguint_val: BigInt(30),
+      address_val:
+        "klv1fpwjz234gy8aaae3gx0e8q9f52vymzzn3z5q0s5h60pvktzx0n0qwvtux5",
+      token_val: "KLV",
+      opt_val: undefined,
+      opt_val2: false,
+      opt_val3: null,
+      list: [true, false, true],
+      custom_list: [{ bar: "KLV" }],
+      custom_type: { bar: "KLV" },
+    };
+
+    expect(abiEncoder.encodeWithABI(JSON.parse(mockAbi), value, "Teste")).toBe(
+      "000000055465737465010000000a0000000000000014000000011e485d212a35410fdef731419f9380a9a2984d885388a807c297d3c2cb2c467cde000000034b4c56000100000000000301000100000001000000034b4c56000000034b4c56"
+    );
+  });
+});
+
 describe("address encoder", () => {
   it("should encode address correctly", () => {
     const address =

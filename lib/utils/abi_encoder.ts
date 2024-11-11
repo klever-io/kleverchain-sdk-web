@@ -1,7 +1,7 @@
 import { bech32 } from "bech32";
 import { Buffer } from "buffer";
 import { getCleanType, getJSType } from ".";
-import { ABITypeMap } from "../types/abi";
+import { ABITypeJSON, ABITypeMap } from "../types/abi";
 
 export function twosComplement(
   value: number,
@@ -136,6 +136,119 @@ const padValue = (value: string, length: number, isNested = true) => {
   return value;
 };
 
+export const encodeWithABI = (
+  abi: ABITypeJSON,
+  value: any,
+  type: string
+): string => {
+  return encodeWithABIRecursive(abi, value, type, "");
+};
+
+const encodeWithABIRecursive = (
+  abi: ABITypeJSON,
+  value: any,
+  type: string,
+  curr: string
+): string => {
+  const abiType = abi.types[type] || null;
+  if (!abiType) {
+    return "";
+  }
+
+  let result = curr;
+
+  abiType.fields.map((item: { name: string; type: string }) => {
+    if (item.type.startsWith("Option<")) {
+      const not = value[item.name] == null || value[item.name] == undefined;
+
+      if (not) {
+        result += "00";
+        return;
+      }
+
+      const convertedType = item.type.slice(7, -1);
+
+      if (isCustomType(convertedType)) {
+        result = encodeWithABIRecursive(
+          abi,
+          value[item.name],
+          item.type,
+          result + "01"
+        );
+        return;
+      }
+
+      result += "01" + encodeABIValue(value[item.name], item.type, true);
+
+      return;
+    }
+
+    if (item.type.startsWith("List<")) {
+      const convertedType = item.type.slice(5, -1);
+
+      if (isCustomType(convertedType)) {
+        result += encodeHexLen(value[item.name].length || 0);
+
+        value[item.name].map((item: any) => {
+          result = encodeWithABIRecursive(abi, item, convertedType, result);
+        });
+        return;
+      }
+
+      result += encodeABIValue(value[item.name], item.type, true);
+
+      return;
+    }
+
+    if (isCustomType(item.type)) {
+      result = encodeWithABIRecursive(abi, value[item.name], item.type, result);
+      return;
+    }
+
+    result += encodeABIValue(value[item.name], item.type, true);
+  });
+
+  return result;
+};
+
+const encodeHexLen = (size: number): string => {
+  return size.toString(16).padStart(8, "0");
+};
+
+export const isCustomType = (type: string): boolean => {
+  switch (type) {
+    case "u64":
+    case "i64":
+    case "u32":
+    case "i32":
+    case "usize":
+    case "isize":
+    case "u16":
+    case "i16":
+    case "u8":
+    case "i8":
+    case "BigUint":
+    case "BigInt":
+    case "bool":
+    case "ManagedBuffer":
+    case "BoxedBytes":
+    case "&[u8]":
+    case "Vec":
+    case "String":
+    case "&str":
+    case "bytes":
+    case "TokenIdentifier":
+    case "List":
+    case "Array":
+    case "Address":
+    case "variadic":
+    case "multi":
+      return false;
+    default:
+      return true;
+  }
+};
+
 export const encodeABIValue = (
   value: any,
   type: string,
@@ -267,6 +380,7 @@ export function encodeVariadic(value: any[], type: string) {
 
 const abiEncoder = {
   encodeABIValue,
+  encodeWithABI,
   encodeLengthPlusData,
   toByteArray,
   encodeBigNumber,
