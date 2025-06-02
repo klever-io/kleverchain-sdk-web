@@ -16,9 +16,35 @@ const isKleverWebActive = () => {
   return !!globalThis?.kleverWeb?.address;
 };
 
-const initialize = async (timeout = 5000) => {
+const initialize = async ({
+  timeout,
+  accountChangeCallback,
+}: {
+  timeout: number;
+  accountChangeCallback: CallableFunction;
+}) => {
+  if (!timeout) {
+    timeout = 5000;
+  }
+
   await utils.waitForKleverWeb(timeout);
-  await globalThis?.kleverWeb?.initialize();
+
+  if (globalThis?.kleverHub !== undefined) {
+    await globalThis?.kleverHub.initialize();
+
+    globalThis?.kleverHub?.onAccountChanged(accountChangeCallback);
+  } else {
+    await globalThis?.kleverWeb?.initialize();
+  }
+};
+
+const isKleverAccount = (address: string, chain?: string | number): boolean => {
+  if (chain && chain !== "KLV" && chain !== 1) return false;
+
+  if (!address || !address.startsWith("klv") || address.length !== 62)
+    return false;
+
+  return true;
 };
 
 const getWalletAddress = (): string => {
@@ -107,6 +133,7 @@ const web = {
   validateSignature,
   buildTransaction,
   initialize,
+  isKleverAccount,
   getWalletAddress,
   getProvider,
   setProvider,

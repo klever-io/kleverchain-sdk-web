@@ -10,6 +10,7 @@ declare global {
   var Go: any;
   var kleverWeb: kleverWeb;
   var kleverProviders: IProvider;
+  var kleverHub: undefined | any;
 }
 
 interface IKleverWeb {

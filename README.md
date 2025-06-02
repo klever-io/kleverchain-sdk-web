@@ -31,6 +31,8 @@ const payload: ITransfer = {
   kda: "KLV",
 };
 
+await web.initialize();
+
 const unsignedTx = await web.buildTransaction([
   {
     payload,
@@ -46,6 +48,30 @@ const response = await web.broadcastTransactions([signedTx]);
 <hr/>
 
 <br/>
+
+## Execute Code On Account Change
+
+To execute code when the user changes their account, you can use the `onAccountChange` method. This method accepts a callback function that will be executed whenever the account changes.
+
+```ts
+import { web } from '@klever/sdk-web';
+...
+  function accountChangeCallback((accountChangeEvent) {
+      if (
+        web.isKleverAccount(accountChangeEvent.address, accountChangeEvent.chain)
+      ) {
+        console.log('Account changed:', accountChangeEvent.address);
+        // You can perform any action here, such as updating the UI or fetching new data.
+      } else {
+        console.error('Not a Klever Account: ', accountChangeEvent.address);
+      }
+  });
+
+  web.initialize({
+    accountChangeCallback
+  })
+...
+```
 
 ## Changing Network
 
