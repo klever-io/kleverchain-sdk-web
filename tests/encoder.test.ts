@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest";
 import abiEncoder from "../lib/utils/abi_encoder";
 
 describe("utils", () => {

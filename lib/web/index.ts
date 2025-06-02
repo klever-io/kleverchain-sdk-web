@@ -38,7 +38,7 @@ const initialize = async ({
   }
 };
 
-const isKleverAccount = (address: string, chain: string | number): boolean => {
+const isKleverAccount = (address: string, chain?: string | number): boolean => {
   if (chain && chain !== "KLV" && chain !== 1) return false;
 
   if (!address || !address.startsWith("klv") || address.length !== 62)

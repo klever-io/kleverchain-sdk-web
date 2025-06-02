@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest";
 import { ABITypeMap } from "../lib/types/abi";
 import { getJSType } from "../lib/utils";
 

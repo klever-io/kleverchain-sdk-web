@@ -1,3 +1,4 @@
+import { describe, expect, it, test } from "vitest";
 import {
   decode,
   decodeList,
@@ -664,203 +665,211 @@ describe("decodeStruct: should decode struct of numbers", () => {
 });
 
 describe("decodeList: should decode list of numbers", () => {
-  let decoded = decodeList("000000020304", "List<i8>", "");
-  expect(decoded.length).toBe(1);
-  expect(decoded[0].length).toBe(2);
-  expect(decoded[0][0]).toBe(3);
-  expect(decoded[0][1]).toBe(4);
+  it("should decode list of u8", () => {
+    let decoded = decodeList("000000020304", "List<i8>", "");
+    expect(decoded.length).toBe(1);
+    expect(decoded[0].length).toBe(2);
+    expect(decoded[0][0]).toBe(3);
+    expect(decoded[0][1]).toBe(4);
 
-  let decoded2 = decodeList(
-    "00000002000000024b4c000000014b00000001000000034b4c56",
-    "List<ManagedBuffer>",
-    ""
-  );
+    let decoded2 = decodeList(
+      "00000002000000024b4c000000014b00000001000000034b4c56",
+      "List<ManagedBuffer>",
+      ""
+    );
 
-  expect(decoded2.length).toBe(2);
-  expect(decoded2[0].length).toBe(2);
-  expect(decoded2[0][0]).toBe("KL");
-  expect(decoded2[0][1]).toBe("K");
-  expect(decoded2[1].length).toBe(1);
-  expect(decoded2[1][0]).toBe("KLV");
+    expect(decoded2.length).toBe(2);
+    expect(decoded2[0].length).toBe(2);
+    expect(decoded2[0][0]).toBe("KL");
+    expect(decoded2[0][1]).toBe("K");
+    expect(decoded2[1].length).toBe(1);
+    expect(decoded2[1][0]).toBe("KLV");
+  });
 });
 
 describe("decodeStruct: should struct with option types", () => {
-  let abi = JSON.stringify({
-    types: {
-      Testing: {
-        type: "struct",
-        fields: [
-          {
-            name: "opt_1",
-            type: "Option<bytes>",
-          },
-          {
-            name: "opt_2",
-            type: "Option<bytes>",
-          },
-          {
-            name: "m_opt_1",
-            type: "Option<bytes>",
-          },
-          {
-            name: "m_opt_2",
-            type: "Option<bytes>",
-          },
-        ],
+  it("should decode struct with Option<bytes> and Option<ManagedBuffer>", () => {
+    let abi = JSON.stringify({
+      types: {
+        Testing: {
+          type: "struct",
+          fields: [
+            {
+              name: "opt_1",
+              type: "Option<bytes>",
+            },
+            {
+              name: "opt_2",
+              type: "Option<bytes>",
+            },
+            {
+              name: "m_opt_1",
+              type: "Option<bytes>",
+            },
+            {
+              name: "m_opt_2",
+              type: "Option<bytes>",
+            },
+          ],
+        },
       },
-    },
+    });
+
+    let hex = "0001000000055465737465000100000006546573746532";
+    let type = "Testing";
+    let result = decodeStruct(hex, type, abi);
+
+    expect(result.opt_1).toBe(null);
+    expect(result.opt_2).toBe("Teste");
+    expect(result.m_opt_1).toBe(null);
+    expect(result.m_opt_2).toBe("Teste2");
   });
-
-  let hex = "0001000000055465737465000100000006546573746532";
-  let type = "Testing";
-  let result = decodeStruct(hex, type, abi);
-
-  expect(result.opt_1).toBe(null);
-  expect(result.opt_2).toBe("Teste");
-  expect(result.m_opt_1).toBe(null);
-  expect(result.m_opt_2).toBe("Teste2");
 });
 
 describe("decodeList: should decode struct with Optionals and List", () => {
-  const abi = JSON.stringify({
-    types: {
-      CrowdfundingData: {
-        type: "struct",
-        fields: [
-          {
-            name: "id",
-            type: "bytes",
-          },
-          {
-            name: "title",
-            type: "bytes",
-          },
-          {
-            name: "logo",
-            type: "bytes",
-          },
-          {
-            name: "description",
-            type: "bytes",
-          },
-          {
-            name: "owner",
-            type: "Address",
-          },
-          {
-            name: "token",
-            type: "TokenIdentifier",
-          },
-          {
-            name: "balance",
-            type: "BigUint",
-          },
-          {
-            name: "claimed",
-            type: "BigUint",
-          },
-          {
-            name: "target",
-            type: "BigUint",
-          },
-          {
-            name: "donators",
-            type: "u64",
-          },
-          {
-            name: "deadline",
-            type: "u64",
-          },
-        ],
+  it("should decode struct with Option<bytes> and List<ManagedBuffer>", () => {
+    const abi = JSON.stringify({
+      types: {
+        CrowdfundingData: {
+          type: "struct",
+          fields: [
+            {
+              name: "id",
+              type: "bytes",
+            },
+            {
+              name: "title",
+              type: "bytes",
+            },
+            {
+              name: "logo",
+              type: "bytes",
+            },
+            {
+              name: "description",
+              type: "bytes",
+            },
+            {
+              name: "owner",
+              type: "Address",
+            },
+            {
+              name: "token",
+              type: "TokenIdentifier",
+            },
+            {
+              name: "balance",
+              type: "BigUint",
+            },
+            {
+              name: "claimed",
+              type: "BigUint",
+            },
+            {
+              name: "target",
+              type: "BigUint",
+            },
+            {
+              name: "donators",
+              type: "u64",
+            },
+            {
+              name: "deadline",
+              type: "u64",
+            },
+          ],
+        },
       },
-    },
+    });
+
+    const hex =
+      "000000107072696d656972612d76616b696e6861000000105072696d656972612056616b696e68610000003b66696e746563682e636f6d2e62722f6170702f75706c6f6164732f323031392f30382f6f2d7175652d652d63726f776466756e64696e672e6a706700000015756d612064657363726963616f206d616e65697261f64e21227e8df59be638d00acfafdeb70d6a678d6eee4d929cbb143bb1edc3e6000000034b4c5600000000000000000000000502540be40000000000000000000000000065ecfd9f";
+
+    const type = "CrowdfundingData";
+    const result = decodeList(hex, type, abi);
+
+    expect(result.length).toBe(1);
+
+    const hex2 =
+      "000000107072696d656972612d76616b696e6861000000105072696d656972612056616b696e68610000003b66696e746563682e636f6d2e62722f6170702f75706c6f6164732f323031392f30382f6f2d7175652d652d63726f776466756e64696e672e6a706700000015756d612064657363726963616f206d616e65697261f64e21227e8df59be638d00acfafdeb70d6a678d6eee4d929cbb143bb1edc3e6000000034b4c5600000000000000000000000502540be40000000000000000000000000065ecfd9f0000000f736567756e64612d76616b696e68610000000f536567756e64612056616b696e68610000003b66696e746563682e636f6d2e62722f6170702f75706c6f6164732f323031392f30382f6f2d7175652d652d63726f776466756e64696e672e6a706700000015756d612064657363726963616f206d616e65697261f64e21227e8df59be638d00acfafdeb70d6a678d6eee4d929cbb143bb1edc3e6000000034b4c5600000000000000000000000502540be40000000000000000000000000065ecfd9f";
+    const type2 = "CrowdfundingData";
+    const result2 = decodeList(hex2, type2, abi);
+
+    expect(result2.length).toBe(2);
   });
-
-  const hex =
-    "000000107072696d656972612d76616b696e6861000000105072696d656972612056616b696e68610000003b66696e746563682e636f6d2e62722f6170702f75706c6f6164732f323031392f30382f6f2d7175652d652d63726f776466756e64696e672e6a706700000015756d612064657363726963616f206d616e65697261f64e21227e8df59be638d00acfafdeb70d6a678d6eee4d929cbb143bb1edc3e6000000034b4c5600000000000000000000000502540be40000000000000000000000000065ecfd9f";
-
-  const type = "CrowdfundingData";
-  const result = decodeList(hex, type, abi);
-
-  expect(result.length).toBe(1);
-
-  const hex2 =
-    "000000107072696d656972612d76616b696e6861000000105072696d656972612056616b696e68610000003b66696e746563682e636f6d2e62722f6170702f75706c6f6164732f323031392f30382f6f2d7175652d652d63726f776466756e64696e672e6a706700000015756d612064657363726963616f206d616e65697261f64e21227e8df59be638d00acfafdeb70d6a678d6eee4d929cbb143bb1edc3e6000000034b4c5600000000000000000000000502540be40000000000000000000000000065ecfd9f0000000f736567756e64612d76616b696e68610000000f536567756e64612056616b696e68610000003b66696e746563682e636f6d2e62722f6170702f75706c6f6164732f323031392f30382f6f2d7175652d652d63726f776466756e64696e672e6a706700000015756d612064657363726963616f206d616e65697261f64e21227e8df59be638d00acfafdeb70d6a678d6eee4d929cbb143bb1edc3e6000000034b4c5600000000000000000000000502540be40000000000000000000000000065ecfd9f";
-  const type2 = "CrowdfundingData";
-  const result2 = decodeList(hex2, type2, abi);
-
-  expect(result2.length).toBe(2);
 });
 
 describe("decodeList: decode default types on List", () => {
-  const abi = JSON.stringify({
-    types: {
-      CrowdfundingData: {
-        type: "struct",
-        fields: [
-          {
-            name: "id",
-            type: "bytes",
-          },
-          {
-            name: "title",
-            type: "bytes",
-          },
-          {
-            name: "logo",
-            type: "bytes",
-          },
-          {
-            name: "description",
-            type: "bytes",
-          },
-          {
-            name: "owner",
-            type: "Address",
-          },
-          {
-            name: "token",
-            type: "TokenIdentifier",
-          },
-          {
-            name: "balance",
-            type: "BigUint",
-          },
-          {
-            name: "claimed",
-            type: "BigUint",
-          },
-          {
-            name: "target",
-            type: "BigUint",
-          },
-          {
-            name: "donators",
-            type: "u64",
-          },
-          {
-            name: "deadline",
-            type: "u64",
-          },
-        ],
+  it("should decode a list with default types", () => {
+    const abi = JSON.stringify({
+      types: {
+        CrowdfundingData: {
+          type: "struct",
+          fields: [
+            {
+              name: "id",
+              type: "bytes",
+            },
+            {
+              name: "title",
+              type: "bytes",
+            },
+            {
+              name: "logo",
+              type: "bytes",
+            },
+            {
+              name: "description",
+              type: "bytes",
+            },
+            {
+              name: "owner",
+              type: "Address",
+            },
+            {
+              name: "token",
+              type: "TokenIdentifier",
+            },
+            {
+              name: "balance",
+              type: "BigUint",
+            },
+            {
+              name: "claimed",
+              type: "BigUint",
+            },
+            {
+              name: "target",
+              type: "BigUint",
+            },
+            {
+              name: "donators",
+              type: "u64",
+            },
+            {
+              name: "deadline",
+              type: "u64",
+            },
+          ],
+        },
       },
-    },
+    });
+
+    const hex =
+      "000000107072696d656972612d76616b696e6861000000105072696d656972612056616b696e68610000003b66696e746563682e636f6d2e62722f6170702f75706c6f6164732f323031392f30382f6f2d7175652d652d63726f776466756e64696e672e6a706700000015756d612064657363726963616f206d616e65697261f64e21227e8df59be638d00acfafdeb70d6a678d6eee4d929cbb143bb1edc3e6000000034b4c5600000000000000000000000502540be40000000000000000000000000065ecfd9f";
+
+    const type = "CrowdfundingData";
+    const result = decodeList(hex, type, abi);
+
+    expect(result.length).toBe(1);
+
+    const hex2 =
+      "000000107072696d656972612d76616b696e6861000000105072696d656972612056616b696e68610000003b66696e746563682e636f6d2e62722f6170702f75706c6f6164732f323031392f30382f6f2d7175652d652d63726f776466756e64696e672e6a706700000015756d612064657363726963616f206d616e65697261f64e21227e8df59be638d00acfafdeb70d6a678d6eee4d929cbb143bb1edc3e6000000034b4c5600000000000000000000000502540be40000000000000000000000000065ecfd9f0000000f736567756e64612d76616b696e68610000000f536567756e64612056616b696e68610000003b66696e746563682e636f6d2e62722f6170702f75706c6f6164732f323031392f30382f6f2d7175652d652d63726f776466756e64696e672e6a706700000015756d612064657363726963616f206d616e65697261f64e21227e8df59be638d00acfafdeb70d6a678d6eee4d929cbb143bb1edc3e6000000034b4c5600000000000000000000000502540be40000000000000000000000000065ecfd9f";
+    const type2 = "CrowdfundingData";
+    const result2 = decodeList(hex2, type2, abi);
+
+    expect(result2.length).toBe(2);
   });
-
-  const hex =
-    "000000107072696d656972612d76616b696e6861000000105072696d656972612056616b696e68610000003b66696e746563682e636f6d2e62722f6170702f75706c6f6164732f323031392f30382f6f2d7175652d652d63726f776466756e64696e672e6a706700000015756d612064657363726963616f206d616e65697261f64e21227e8df59be638d00acfafdeb70d6a678d6eee4d929cbb143bb1edc3e6000000034b4c5600000000000000000000000502540be40000000000000000000000000065ecfd9f";
-
-  const type = "CrowdfundingData";
-  const result = decodeList(hex, type, abi);
-
-  expect(result.length).toBe(1);
-
-  const hex2 =
-    "000000107072696d656972612d76616b696e6861000000105072696d656972612056616b696e68610000003b66696e746563682e636f6d2e62722f6170702f75706c6f6164732f323031392f30382f6f2d7175652d652d63726f776466756e64696e672e6a706700000015756d612064657363726963616f206d616e65697261f64e21227e8df59be638d00acfafdeb70d6a678d6eee4d929cbb143bb1edc3e6000000034b4c5600000000000000000000000502540be40000000000000000000000000065ecfd9f0000000f736567756e64612d76616b696e68610000000f536567756e64612056616b696e68610000003b66696e746563682e636f6d2e62722f6170702f75706c6f6164732f323031392f30382f6f2d7175652d652d63726f776466756e64696e672e6a706700000015756d612064657363726963616f206d616e65697261f64e21227e8df59be638d00acfafdeb70d6a678d6eee4d929cbb143bb1edc3e6000000034b4c5600000000000000000000000502540be40000000000000000000000000065ecfd9f";
-  const type2 = "CrowdfundingData";
-  const result2 = decodeList(hex2, type2, abi);
-
-  expect(result2.length).toBe(2);
 });
 
 describe("decodeList: should be capable of decode a list with nested structs", () => {
@@ -1065,50 +1074,52 @@ describe("decode: should decode variadic List", () => {
 });
 
 describe("decode: should struct with option types", () => {
-  let abi = JSON.stringify({
-    endpoints: [
-      {
-        name: "getTesting",
-        mutability: "readonly",
-        outputs: [
-          {
-            type: "Testing",
-          },
-        ],
+  it("should decode struct with Option<bytes> and Option<ManagedBuffer>", () => {
+    let abi = JSON.stringify({
+      endpoints: [
+        {
+          name: "getTesting",
+          mutability: "readonly",
+          outputs: [
+            {
+              type: "Testing",
+            },
+          ],
+        },
+      ],
+      types: {
+        Testing: {
+          type: "struct",
+          fields: [
+            {
+              name: "opt_1",
+              type: "Option<bytes>",
+            },
+            {
+              name: "opt_2",
+              type: "Option<bytes>",
+            },
+            {
+              name: "m_opt_1",
+              type: "Option<bytes>",
+            },
+            {
+              name: "m_opt_2",
+              type: "Option<bytes>",
+            },
+          ],
+        },
       },
-    ],
-    types: {
-      Testing: {
-        type: "struct",
-        fields: [
-          {
-            name: "opt_1",
-            type: "Option<bytes>",
-          },
-          {
-            name: "opt_2",
-            type: "Option<bytes>",
-          },
-          {
-            name: "m_opt_1",
-            type: "Option<bytes>",
-          },
-          {
-            name: "m_opt_2",
-            type: "Option<bytes>",
-          },
-        ],
-      },
-    },
+    });
+
+    let hex = "0001000000055465737465000100000006546573746532";
+    let result = decode(abi, hex, "getTesting");
+
+    expect(result.opt_1).toBe(null);
+    expect(result.opt_2).toBe("Teste");
+    expect(result.m_opt_1).toBe(null);
+    expect(result.m_opt_2).toBe("Teste2");
   });
-
-  let hex = "0001000000055465737465000100000006546573746532";
-  let result = decode(abi, hex, "getTesting");
-
-  expect(result.opt_1).toBe(null);
-  expect(result.opt_2).toBe("Teste");
-  expect(result.m_opt_1).toBe(null);
-  expect(result.m_opt_2).toBe("Teste2");
 });
 
 describe("decode: should decode all values", () => {
@@ -1402,60 +1413,64 @@ describe("decode: should decode all values", () => {
 });
 
 describe("decode: should decode a tuple", () => {
-  const abi = JSON.stringify({
-    endpoints: [
-      {
-        name: "getTuple",
-        mutability: "readonly",
-        inputs: [],
-        outputs: [
-          {
-            type: "tuple<BigUint,bytes,Address>",
-          },
-        ],
-      },
-    ],
+  it("should decode a tuple with BigUint, bytes and Address", () => {
+    const abi = JSON.stringify({
+      endpoints: [
+        {
+          name: "getTuple",
+          mutability: "readonly",
+          inputs: [],
+          outputs: [
+            {
+              type: "tuple<BigUint,bytes,Address>",
+            },
+          ],
+        },
+      ],
+    });
+
+    const hex =
+      "0000000203e80000000474657374000000000000000005002e8ba478ded59c31ddea4f6f3a8c39dd5942d167c3e6";
+
+    const result = decode(abi, hex, "getTuple");
+
+    expect(result._0).toBe(BigInt(1000));
+    expect(result._1).toBe("test");
+    expect(result._2).toBe(
+      "klv1qqqqqqqqqqqqqpgq9696g7x76kwrrh02fahn4rpem4v595t8c0nqgxzpmu"
+    );
   });
-
-  const hex =
-    "0000000203e80000000474657374000000000000000005002e8ba478ded59c31ddea4f6f3a8c39dd5942d167c3e6";
-
-  const result = decode(abi, hex, "getTuple");
-
-  expect(result._0).toBe(BigInt(1000));
-  expect(result._1).toBe("test");
-  expect(result._2).toBe(
-    "klv1qqqqqqqqqqqqqpgq9696g7x76kwrrh02fahn4rpem4v595t8c0nqgxzpmu"
-  );
 });
 
 describe("decode: should decode a tuple with a list inside", () => {
-  const abi = JSON.stringify({
-    endpoints: [
-      {
-        name: "getTuple",
-        mutability: "readonly",
-        inputs: [],
-        outputs: [
-          {
-            type: "tuple<BigUint,List<bytes>,Address>",
-          },
-        ],
-      },
-    ],
+  it("should decode a tuple with BigUint, List<bytes> and Address", () => {
+    const abi = JSON.stringify({
+      endpoints: [
+        {
+          name: "getTuple",
+          mutability: "readonly",
+          inputs: [],
+          outputs: [
+            {
+              type: "tuple<BigUint,List<bytes>,Address>",
+            },
+          ],
+        },
+      ],
+    });
+
+    const hex =
+      "0000000203e8000000020000000474657374000000057465737432000000000000000005002e8ba478ded59c31ddea4f6f3a8c39dd5942d167c3e6";
+
+    const result = decode(abi, hex, "getTuple");
+
+    expect(result._0).toBe(BigInt(1000));
+    expect(result._1).toBeInstanceOf(Array);
+    expect(result._1.length).toBe(2);
+    expect(result._1[0]).toBe("test");
+    expect(result._1[1]).toBe("test2");
+    expect(result._2).toBe(
+      "klv1qqqqqqqqqqqqqpgq9696g7x76kwrrh02fahn4rpem4v595t8c0nqgxzpmu"
+    );
   });
-
-  const hex =
-    "0000000203e8000000020000000474657374000000057465737432000000000000000005002e8ba478ded59c31ddea4f6f3a8c39dd5942d167c3e6";
-
-  const result = decode(abi, hex, "getTuple");
-
-  expect(result._0).toBe(BigInt(1000));
-  expect(result._1).toBeInstanceOf(Array);
-  expect(result._1.length).toBe(2);
-  expect(result._1[0]).toBe("test");
-  expect(result._1[1]).toBe("test2");
-  expect(result._2).toBe(
-    "klv1qqqqqqqqqqqqqpgq9696g7x76kwrrh02fahn4rpem4v595t8c0nqgxzpmu"
-  );
 });
