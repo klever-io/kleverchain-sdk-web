@@ -39,9 +39,12 @@ const initialize = async ({
 };
 
 const isKleverAccount = (address: string, chain: string | number): boolean => {
-  if ((chain === "KLV" || chain === 1) && address.length === 62) return true;
+  if (chain && chain !== "KLV" && chain !== 1) return false;
 
-  return false;
+  if (!address || !address.startsWith("klv") || address.length !== 62)
+    return false;
+
+  return true;
 };
 
 const getWalletAddress = (): string => {

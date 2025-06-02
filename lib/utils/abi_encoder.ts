@@ -1,5 +1,4 @@
 import { bech32 } from "bech32";
-import { Buffer } from "buffer";
 import { getCleanType, getJSType } from ".";
 import { ABITypeJSON, ABITypeMap } from "../types/abi";
 

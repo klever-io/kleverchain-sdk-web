@@ -36,7 +36,6 @@
   },
   "dependencies": {
     "@klever/kleverweb": "^1.4.0",
-    "bech32": "^2.0.0",
-    "buffer": "^6.0.3"
+    "bech32": "^2.0.0"
   }
 }
