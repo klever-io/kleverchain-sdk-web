@@ -16,23 +16,19 @@ const isKleverWebActive = () => {
   return !!globalThis?.kleverWeb?.address;
 };
 
-const initialize = async ({
-  timeout,
-  accountChangeCallback,
-}: {
+const initialize = async (options?: {
   timeout: number;
   accountChangeCallback: CallableFunction;
 }) => {
-  if (!timeout) {
-    timeout = 5000;
-  }
+  let timeout = options?.timeout || 5000;
 
   await utils.waitForKleverWeb(timeout);
 
   if (globalThis?.kleverHub !== undefined) {
     await globalThis?.kleverHub.initialize();
 
-    globalThis?.kleverHub?.onAccountChanged(accountChangeCallback);
+    if (options?.accountChangeCallback)
+      globalThis?.kleverHub?.onAccountChanged(options?.accountChangeCallback);
   } else {
     await globalThis?.kleverWeb?.initialize();
   }
